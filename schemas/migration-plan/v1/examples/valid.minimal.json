@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "v1",
+  "metadata": {
+    "name": "minimal-migration-plan",
+    "description": "Minimal valid migration plan contract example.",
+    "createdAt": "2026-04-22T00:00:00Z"
+  },
+  "source": {
+    "cluster": {
+      "name": "aks-prod-01",
+      "kubernetesVersion": "1.29.4"
+    },
+    "ingressController": {
+      "type": "ingress-nginx",
+      "version": "4.10.0"
+    }
+  },
+  "target": {
+    "agc": {
+      "name": "agc-prod-01",
+      "resourceGroup": "rg-network-prod"
+    },
+    "gatewayApi": {
+      "version": "v1"
+    }
+  },
+  "steps": [
+    {
+      "id": "step-01-prereq",
+      "name": "Run prerequisite checks",
+      "phase": "prereq",
+      "actions": [
+        {
+          "type": "manual",
+          "instructions": "Confirm migration window and rollback owner."
+        }
+      ]
+    }
+  ]
+}

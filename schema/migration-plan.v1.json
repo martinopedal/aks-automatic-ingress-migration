@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/martinopedal/aks-automatic-ingress-migration/main/schema/migration-plan.v1.json",
+  "title": "Migration Plan Schema v1 Compatibility Entry Point",
+  "description": "Compatibility entry point for cross-repo consumers that resolve schema/migration-plan.v1.json.",
+  "$ref": "../schemas/migration-plan/v1/schema.json"
+}
