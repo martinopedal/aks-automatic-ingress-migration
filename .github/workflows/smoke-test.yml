@@ -1,0 +1,254 @@
+name: smoke-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      location:
+        description: Azure region for the ephemeral smoke environment
+        required: false
+        default: westeurope
+        type: string
+      baseline_url:
+        description: Optional pre-migration endpoint URL for latency baseline
+        required: false
+        type: string
+      agc_url:
+        description: Optional AGC endpoint URL override
+        required: false
+        type: string
+      expected_body:
+        description: Body fragment expected from hello-world
+        required: false
+        default: hello-world
+        type: string
+      probe_count:
+        description: Number of probe requests per endpoint
+        required: false
+        default: '10'
+        type: string
+  schedule:
+    # Weekly every Monday at 03:00 UTC to run during early UTC hours.
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-test-live
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      can_run: ${{ steps.check.outputs.can_run }}
+      reason: ${{ steps.check.outputs.reason }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: check
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${AZURE_CLIENT_ID}" || -z "${AZURE_TENANT_ID}" || -z "${AZURE_SUBSCRIPTION_ID}" ]]; then
+            echo "can_run=false" >> "$GITHUB_OUTPUT"
+            echo "reason=Missing required Azure OIDC secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! -d samples/hello-world ]]; then
+            echo "can_run=false" >> "$GITHUB_OUTPUT"
+            echo "reason=samples/hello-world is missing. Expected sample deploy scripts at samples/hello-world/smoke/deploy.sh or deploy.ps1." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "can_run=true" >> "$GITHUB_OUTPUT"
+          echo "reason=ok" >> "$GITHUB_OUTPUT"
+
+  skip:
+    needs: preflight
+    if: needs.preflight.outputs.can_run != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Smoke test skipped."
+          echo "${{ needs.preflight.outputs.reason }}"
+
+  smoke:
+    needs: preflight
+    if: needs.preflight.outputs.can_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      LOCATION: ${{ inputs.location || 'westeurope' }}
+      INPUT_BASELINE_URL: ${{ inputs.baseline_url }}
+      INPUT_AGC_URL: ${{ inputs.agc_url }}
+      EXPECTED_BODY: ${{ inputs.expected_body || 'hello-world' }}
+      PROBE_COUNT: ${{ inputs.probe_count || '10' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Azure login with OIDC
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set smoke environment names
+        run: |
+          set -euo pipefail
+          echo "RESOURCE_GROUP=rg-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
+          echo "SMOKE_ENV_FILE=/tmp/hello-world-smoke.env" >> "$GITHUB_ENV"
+
+      - name: Create resource group
+        run: |
+          set -euo pipefail
+          az group create --name "${RESOURCE_GROUP}" --location "${LOCATION}" --tags purpose=smoke-test repo="${GITHUB_REPOSITORY}" run_id="${GITHUB_RUN_ID}" >/dev/null
+
+      - name: Deploy hello-world sample
+        run: |
+          set -euo pipefail
+          if [[ -x samples/hello-world/smoke/deploy.sh ]]; then
+            samples/hello-world/smoke/deploy.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}" --output-file "${SMOKE_ENV_FILE}"
+          elif [[ -f samples/hello-world/smoke/deploy.ps1 ]]; then
+            pwsh -File samples/hello-world/smoke/deploy.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}" -OutputFile "${SMOKE_ENV_FILE}"
+          else
+            echo "Deploy script not found. Expected one of:"
+            echo "  samples/hello-world/smoke/deploy.sh"
+            echo "  samples/hello-world/smoke/deploy.ps1"
+            exit 1
+          fi
+
+      - name: Resolve endpoint values
+        run: |
+          set -euo pipefail
+          if [[ -f "${SMOKE_ENV_FILE}" ]]; then
+            # shellcheck disable=SC1090
+            source "${SMOKE_ENV_FILE}"
+          fi
+
+          BASELINE_URL="${BASELINE_URL:-${INPUT_BASELINE_URL:-}}"
+          AGC_URL="${AGC_URL:-${INPUT_AGC_URL:-}}"
+
+          if [[ -z "${AGC_URL}" ]]; then
+            echo "AGC_URL not set by deploy script or workflow input."
+            exit 1
+          fi
+
+          {
+            echo "BASELINE_URL=${BASELINE_URL}"
+            echo "AGC_URL=${AGC_URL}"
+            echo "EXPECTED_BODY=${EXPECTED_BODY}"
+          } >> "$GITHUB_ENV"
+
+      - name: Smoke curl and latency capture
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/smoke
+
+          probe() {
+            local label="$1"
+            local target_url="$2"
+            local output_file="$3"
+            : > "${output_file}"
+            for i in $(seq 1 "${PROBE_COUNT}"); do
+              local body_file="/tmp/smoke/body-${label}-${i}.txt"
+              result="$(curl -sSL -o "${body_file}" -w "%{http_code} %{time_total}" "${target_url}")"
+              code="${result%% *}"
+              latency="${result##* }"
+              body="$(cat "${body_file}")"
+              if [[ "${code}" != "200" ]]; then
+                echo "${label} request ${i} failed with status ${code}"
+                exit 1
+              fi
+              if [[ "${body}" != *"${EXPECTED_BODY}"* ]]; then
+                echo "${label} request ${i} body did not contain expected text: ${EXPECTED_BODY}"
+                exit 1
+              fi
+              echo "${latency}" >> "${output_file}"
+              sleep 0.5
+            done
+          }
+
+          if [[ -n "${BASELINE_URL}" ]]; then
+            probe "baseline" "${BASELINE_URL}" "/tmp/smoke/baseline-latency.txt"
+          fi
+          probe "agc" "${AGC_URL}" "/tmp/smoke/agc-latency.txt"
+
+          python - <<'PY'
+          import json
+          import os
+          import statistics
+
+          def read_series(path):
+            if not os.path.exists(path):
+              return None
+            with open(path, "r", encoding="utf-8") as f:
+              values = [float(line.strip()) for line in f if line.strip()]
+            if not values:
+              return None
+            ordered = sorted(values)
+            # Using n=20 with method='inclusive' returns 19 boundaries. Index 18 is p95.
+            p95 = round(statistics.quantiles(ordered, n=20, method="inclusive")[18], 6)
+            return {
+              "count": len(values),
+              "avg_seconds": round(statistics.mean(values), 6),
+              "p95_seconds": p95,
+              "max_seconds": round(max(values), 6),
+            }
+
+          baseline = read_series("/tmp/smoke/baseline-latency.txt")
+          agc = read_series("/tmp/smoke/agc-latency.txt")
+          payload = {
+            "baseline": baseline,
+            "agc": agc,
+            "delta_avg_seconds": None if baseline is None or agc is None else round(agc["avg_seconds"] - baseline["avg_seconds"], 6),
+          }
+          with open("/tmp/smoke/latency-summary.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+            f.write("## Live smoke test summary\n")
+            f.write(f"- AGC URL: `{os.environ['AGC_URL']}`\n")
+            if baseline:
+              f.write(f"- Baseline avg (s): `{baseline['avg_seconds']}`\n")
+            else:
+              f.write("- Baseline avg (s): `n/a`\n")
+            f.write(f"- AGC avg (s): `{agc['avg_seconds']}`\n")
+            if payload["delta_avg_seconds"] is not None:
+              f.write(f"- Avg delta AGC-baseline (s): `{payload['delta_avg_seconds']}`\n")
+          PY
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: smoke-latency-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /tmp/smoke/*.txt
+            /tmp/smoke/latency-summary.json
+          if-no-files-found: error
+
+      - name: Teardown hello-world sample
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -x samples/hello-world/smoke/teardown.sh ]]; then
+            if ! samples/hello-world/smoke/teardown.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}"; then
+              echo "Warning: teardown.sh returned a non-zero exit code."
+            fi
+          elif [[ -f samples/hello-world/smoke/teardown.ps1 ]]; then
+            if ! pwsh -File samples/hello-world/smoke/teardown.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}"; then
+              echo "Warning: teardown.ps1 returned a non-zero exit code."
+            fi
+          fi
+
+      - name: Delete smoke resource group
+        if: always()
+        run: |
+          set -euo pipefail
+          az group delete --name "${RESOURCE_GROUP}" --yes || true
