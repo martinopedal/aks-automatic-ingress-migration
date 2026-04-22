@@ -31,6 +31,10 @@ The documented migration target is Gateway API with Application Gateway for Cont
 
 Pre-alpha. Backlog tracked as GitHub issues with the `squad` label.
 
+## Compatibility matrix
+
+See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix is reviewed quarterly by Atlas.
+
 ## Stack
 
 - Terraform (`azurerm` + `azapi`): primary IaC.
