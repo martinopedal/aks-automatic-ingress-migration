@@ -25,7 +25,7 @@ locals {
 check "location_resolved" {
   assert {
     condition     = local.location != null
-    error_message = "Unable to resolve location from resource group data. Set var.location explicitly."
+    error_message = "Unable to resolve location. Resource group response could not be decoded or did not include location. Set var.location explicitly."
   }
 }
 
