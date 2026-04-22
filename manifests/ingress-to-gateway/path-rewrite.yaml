@@ -1,0 +1,62 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: path-rewrite-ingress
+  namespace: catalog-path-rewrite
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: shop.contoso.com
+      http:
+        paths:
+          - path: /store
+            pathType: Prefix
+            backend:
+              service:
+                name: storefront
+                port:
+                  number: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: path-rewrite-gateway
+  namespace: catalog-path-rewrite
+spec:
+  gatewayClassName: azure-alb-external
+  listeners:
+    - name: http
+      hostname: shop.contoso.com
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: path-rewrite-route
+  namespace: catalog-path-rewrite
+spec:
+  parentRefs:
+    - name: path-rewrite-gateway
+      sectionName: http
+  hostnames:
+    - shop.contoso.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /store
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: storefront
+          port: 8080
