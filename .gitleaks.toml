@@ -1,0 +1,36 @@
+# gitleaks config for aks-automatic-ingress-migration
+# Public OSS posture: catch any leaks of identifiers that should not ship
+# alongside upstream secret patterns.
+
+title = "aks-automatic-ingress-migration gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist for placeholders, examples, and built-in public identifiers"
+paths = [
+  '''(.*?)\.md''',
+  '''samples/.*''',
+  '''docs/.*''',
+]
+regexes = [
+  '''00000000-0000-0000-0000-000000000000''',
+  '''11111111-1111-1111-1111-111111111111''',
+  '''<your-subscription-id>''',
+  '''<your-tenant-id>''',
+  '''<your-mg-id>''',
+  '''EXAMPLE-''',
+]
+
+[[rules]]
+id = "azure-tenant-or-subscription-id-in-non-doc"
+description = "Block real-looking GUIDs in non-doc paths"
+regex = '''[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'''
+path = '''(infra|charts|manifests|src|scripts)/.*'''
+[rules.allowlist]
+regexes = [
+  '''00000000-0000-0000-0000-000000000000''',
+  '''11111111-1111-1111-1111-111111111111''',
+  '''EXAMPLE-''',
+]

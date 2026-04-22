@@ -1,0 +1,60 @@
+name: validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - name: terraform fmt
+        run: |
+          if [ -d infra/terraform ]; then
+            terraform -chdir=infra/terraform fmt -check -recursive
+          fi
+      - name: terraform validate
+        run: |
+          if [ -d infra/terraform ]; then
+            terraform -chdir=infra/terraform init -backend=false
+            terraform -chdir=infra/terraform validate
+          fi
+
+  bicep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: install bicep
+        run: az bicep install
+      - name: bicep build + lint
+        run: |
+          if [ -d infra/bicep ]; then
+            find infra/bicep -name '*.bicep' -print0 | xargs -0 -n1 az bicep build --file
+          fi
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+      - name: kubeconform manifests
+        run: |
+          if [ -d manifests ]; then
+            find manifests -name '*.yaml' -print0 | xargs -0 -r kubeconform -strict -ignore-missing-schemas
+          fi
+      - name: helm lint
+        run: |
+          if [ -d charts ]; then
+            for c in charts/*/; do helm lint "$c"; done
+          fi

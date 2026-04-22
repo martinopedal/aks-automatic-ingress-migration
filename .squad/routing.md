@@ -6,13 +6,19 @@ How to decide who handles what.
 
 | Work Type | Route To | Examples |
 |-----------|----------|----------|
-| {domain 1} | {Name} | {example tasks} |
-| {domain 2} | {Name} | {example tasks} |
-| {domain 3} | {Name} | {example tasks} |
-| Code review | {Name} | Review PRs, check quality, suggest improvements |
-| Testing | {Name} | Write tests, find edge cases, verify fixes |
-| Scope & priorities | {Name} | What to build next, trade-offs, decisions |
-| Session logging | Scribe | Automatic — never needs routing |
+| Terraform modules and examples | Forge | AGC provisioning, AKS Automatic config, networking, outputs |
+| Bicep parity | Forge | Bicep equivalents of Terraform modules, parameter parity |
+| Kubernetes manifests | Atlas | Gateway, HTTPRoute, TLSRoute, ReferenceGrant authoring |
+| Ingress to Gateway API translation | Atlas | Annotation mapping, conversion scripts, edge cases |
+| Helm charts | Atlas | AGC controller deployment, sample apps |
+| Workload Identity and RBAC | Iris | AGC managed identity, federated credentials, AKS RBAC |
+| Security review | Sentinel | Network policies, pod security, supply chain, AGC IAM scopes |
+| Migration runbook and docs | Sage | Step-by-step playbook, breaking-change tracking, MS doc citations |
+| Pre-build research | Sage | "Has someone done this?", upstream tooling scouting (ingress2gateway etc.) |
+| Triage, design, PR sign-off | Lead | All untriaged squad issues, design reviews |
+| Code review | Lead | Review PRs, enforce conventions, dual-IaC parity check |
+| Scope and priorities | Lead | What to build next, trade-offs |
+| Session logging | Scribe | Automatic, never needs routing |
 
 ## Issue Routing
 
