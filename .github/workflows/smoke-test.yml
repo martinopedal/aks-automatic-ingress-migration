@@ -21,7 +21,13 @@ on:
         required: false
         default: hello-world
         type: string
+      probe_count:
+        description: Number of probe requests per endpoint
+        required: false
+        default: '10'
+        type: string
   schedule:
+    # Weekly every Monday at 03:00 UTC to run during early UTC hours.
     - cron: '0 3 * * 1'
 
 permissions:
@@ -54,7 +60,7 @@ jobs:
 
           if [[ ! -d samples/hello-world ]]; then
             echo "can_run=false" >> "$GITHUB_OUTPUT"
-            echo "reason=samples/hello-world is missing. This workflow depends on issue #12 sample content." >> "$GITHUB_OUTPUT"
+            echo "reason=samples/hello-world is missing. Expected sample deploy scripts at samples/hello-world/smoke/deploy.sh or deploy.ps1." >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -82,11 +88,12 @@ jobs:
       INPUT_BASELINE_URL: ${{ inputs.baseline_url }}
       INPUT_AGC_URL: ${{ inputs.agc_url }}
       EXPECTED_BODY: ${{ inputs.expected_body || 'hello-world' }}
+      PROBE_COUNT: ${{ inputs.probe_count || '10' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Azure login with OIDC
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -111,7 +118,7 @@ jobs:
           elif [[ -f samples/hello-world/smoke/deploy.ps1 ]]; then
             pwsh -File samples/hello-world/smoke/deploy.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}" -OutputFile "${SMOKE_ENV_FILE}"
           else
-            echo "Expected one of:"
+            echo "Deploy script not found. Expected one of:"
             echo "  samples/hello-world/smoke/deploy.sh"
             echo "  samples/hello-world/smoke/deploy.ps1"
             exit 1
@@ -127,7 +134,6 @@ jobs:
 
           BASELINE_URL="${BASELINE_URL:-${INPUT_BASELINE_URL:-}}"
           AGC_URL="${AGC_URL:-${INPUT_AGC_URL:-}}"
-          EXPECTED_BODY="${EXPECTED_BODY:-hello-world}"
 
           if [[ -z "${AGC_URL}" ]]; then
             echo "AGC_URL not set by deploy script or workflow input."
@@ -150,11 +156,12 @@ jobs:
             local target_url="$2"
             local output_file="$3"
             : > "${output_file}"
-            for i in $(seq 1 10); do
-              result="$(curl -sS -o /tmp/smoke/body.txt -w "%{http_code} %{time_total}" "${target_url}")"
+            for i in $(seq 1 "${PROBE_COUNT}"); do
+              local body_file="/tmp/smoke/body-${label}-${i}.txt"
+              result="$(curl -sSL -o "${body_file}" -w "%{http_code} %{time_total}" "${target_url}")"
               code="${result%% *}"
               latency="${result##* }"
-              body="$(cat /tmp/smoke/body.txt)"
+              body="$(cat "${body_file}")"
               if [[ "${code}" != "200" ]]; then
                 echo "${label} request ${i} failed with status ${code}"
                 exit 1
@@ -164,6 +171,7 @@ jobs:
                 exit 1
               fi
               echo "${latency}" >> "${output_file}"
+              sleep 0.5
             done
           }
 
@@ -184,12 +192,13 @@ jobs:
               values = [float(line.strip()) for line in f if line.strip()]
             if not values:
               return None
-            p95_idx = max(0, int(round(0.95 * len(values))) - 1)
             ordered = sorted(values)
+            # Using n=20 with method='inclusive' returns 19 boundaries. Index 18 is p95.
+            p95 = round(statistics.quantiles(ordered, n=20, method="inclusive")[18], 6)
             return {
               "count": len(values),
               "avg_seconds": round(statistics.mean(values), 6),
-              "p95_seconds": round(ordered[p95_idx], 6),
+              "p95_seconds": p95,
               "max_seconds": round(max(values), 6),
             }
 
@@ -198,7 +207,7 @@ jobs:
           payload = {
             "baseline": baseline,
             "agc": agc,
-            "delta_avg_seconds": None if not baseline else round(agc["avg_seconds"] - baseline["avg_seconds"], 6),
+            "delta_avg_seconds": None if baseline is None or agc is None else round(agc["avg_seconds"] - baseline["avg_seconds"], 6),
           }
           with open("/tmp/smoke/latency-summary.json", "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
@@ -216,7 +225,7 @@ jobs:
 
       - name: Upload smoke artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: smoke-latency-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -229,9 +238,13 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -x samples/hello-world/smoke/teardown.sh ]]; then
-            samples/hello-world/smoke/teardown.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}" || true
+            if ! samples/hello-world/smoke/teardown.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}"; then
+              echo "Warning: teardown.sh returned a non-zero exit code."
+            fi
           elif [[ -f samples/hello-world/smoke/teardown.ps1 ]]; then
-            pwsh -File samples/hello-world/smoke/teardown.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}" || true
+            if ! pwsh -File samples/hello-world/smoke/teardown.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}"; then
+              echo "Warning: teardown.ps1 returned a non-zero exit code."
+            fi
           fi
 
       - name: Delete smoke resource group
