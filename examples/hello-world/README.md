@@ -12,7 +12,7 @@ This sample shows the minimum path for an AKS Automatic workload on Gateway API 
 - `bicep/main.bicep`: Bicep wrapper that consumes `infra/bicep/agc`.
 - `manifests/`: Namespace, ServiceAccount, Deployment, Service, Gateway, and HTTPRoute.
 
-## 1) Provision AGC base infrastructure
+## 1) Plan AGC base infrastructure changes (read-only)
 
 Terraform:
 
@@ -30,11 +30,15 @@ az deployment group what-if \
   --template-file examples/hello-world/bicep/main.bicep
 ```
 
-Both wrappers reference the shared AGC modules under `infra/`. If those modules are not present on your branch yet, sync with the branch that contains issue #9 and #10 first.
+Both wrappers reference the shared AGC modules under `infra/`. If those modules are not present on your branch yet, sync with the latest `main` branch before continuing.
 
 ## 2) Install ALB controller with Workload Identity
 
-Follow Microsoft setup guidance for ALB Controller and Workload Identity.
+Complete these tasks before you apply the sample manifests:
+
+1. Install the ALB Controller in `azure-alb-system`.
+2. Configure Workload Identity federation for `system:serviceaccount:azure-alb-system:alb-controller-sa` to the AGC managed identity.
+3. Confirm the controller is healthy: `kubectl get pods -n azure-alb-system`.
 
 - https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-create-application-gateway-for-containers-managed-by-alb-controller
 - https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview
