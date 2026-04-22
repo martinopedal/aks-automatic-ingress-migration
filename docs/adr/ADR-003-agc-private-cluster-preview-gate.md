@@ -1,6 +1,8 @@
 # ADR-003: AGC Private Cluster Preview Status Gate
 
-**Status:** Accepted  
+*Not an official Microsoft product. Community migration toolkit. See LICENSE.*
+
+**Status:** Accepted
 **Date:** 2026-04-22  
 **Deciders:** Sage, Sentinel  
 
