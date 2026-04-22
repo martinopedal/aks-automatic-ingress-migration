@@ -1,4 +1,4 @@
-# hello-world sample, ALZ Corp default
+# hello-world sample, ALZ Corp defaults
 
 This sample shows the minimum path for an AKS Automatic workload on Gateway API and Application Gateway for Containers, aligned to ALZ Corp defaults.
 
@@ -30,7 +30,7 @@ az deployment group what-if \
   --template-file examples/hello-world/bicep/main.bicep
 ```
 
-Both wrappers reference the shared AGC modules under `infra/`. If those modules are not present on your branch yet, sync with the latest `main` branch before continuing.
+Both wrappers reference the shared AGC modules under `infra/`. If you copy this sample outside this repository, update the module paths to your local AGC base module locations.
 
 ## 2) Install ALB controller with Workload Identity
 
