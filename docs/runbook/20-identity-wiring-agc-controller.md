@@ -1,8 +1,8 @@
 # Identity wiring for AGC controller (Workload Identity)
 
-Owner: Iris.
+Owner: Iris
 
-This runbook wires the ALB controller to a user-assigned managed identity using AKS Workload Identity and federated credentials. Do not use service principal secrets in cluster.
+This runbook wires the AGC ALB controller to a user-assigned managed identity using AKS Workload Identity and federated credentials, avoiding service principal secrets in cluster.
 
 ## Inputs
 
@@ -65,7 +65,7 @@ kubectl annotate serviceaccount -n "$K8S_NAMESPACE" "$K8S_SERVICE_ACCOUNT" \
 
 ## 5) Scope RBAC to AGC resource only
 
-Assign only the minimum role required by the ALB controller, scoped to `$AGC_RESOURCE_ID`. Do not grant subscription-wide rights.
+Assign only the minimum role required by the AGC ALB controller, scoped to `$AGC_RESOURCE_ID`. Do not grant subscription-wide rights.
 
 ```bash
 PRINCIPAL_ID="$(az identity show -g "$MI_RESOURCE_GROUP" -n "$MI_NAME" --query "principalId" -o tsv)"
@@ -73,7 +73,7 @@ echo "principalId=$PRINCIPAL_ID"
 echo "scope=$AGC_RESOURCE_ID"
 ```
 
-Use the AGC ALB controller setup documentation to select the exact role for your deployment mode.
+Use the AGC ALB controller setup documentation to select the exact role for your deployment mode: [AGC ALB controller quickstart with Helm](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-helm) and [AGC ALB controller quickstart with AKS add-on](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon).
 
 ## 6) Validate token flow and controller health
 
@@ -81,6 +81,8 @@ Use the AGC ALB controller setup documentation to select the exact role for your
 kubectl get pods -n "$K8S_NAMESPACE" -l app.kubernetes.io/name=alb-controller
 kubectl logs -n "$K8S_NAMESPACE" deploy/alb-controller --tail=200
 ```
+
+The label and deployment name `alb-controller` follow the Microsoft AGC controller quickstart conventions.
 
 Expected state:
 
