@@ -37,7 +37,7 @@ Both wrappers reference the shared AGC modules under `infra/`. If those modules 
 Complete these tasks before you apply the sample manifests:
 
 1. Install the ALB Controller in `azure-alb-system`.
-2. Configure Workload Identity federation for `system:serviceaccount:azure-alb-system:alb-controller-sa` to the AGC managed identity.
+2. Configure Workload Identity federation for `system:serviceaccount:azure-alb-system:alb-controller-sa` to the AGC managed identity client ID emitted by the infrastructure wrappers (`agc_identity_client_id`).
 3. Confirm the controller is healthy: `kubectl get pods -n azure-alb-system`.
 
 - https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-create-application-gateway-for-containers-managed-by-alb-controller

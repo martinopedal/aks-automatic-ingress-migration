@@ -9,4 +9,5 @@ spec:
   ports:
     - name: http
       port: 80
+      # hashicorp/http-echo listens on 5678 in this sample deployment.
       targetPort: 5678
