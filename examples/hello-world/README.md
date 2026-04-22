@@ -1,4 +1,4 @@
-# Hello-world sample, ALZ Corp default
+# Hello-World sample, ALZ Corp default
 
 This sample shows the minimum path for an AKS Automatic workload on Gateway API and Application Gateway for Containers, aligned to ALZ Corp defaults.
 
@@ -18,7 +18,7 @@ Terraform:
 
 ```bash
 cd examples/hello-world/terraform
-terraform init -backend=false
+terraform init
 terraform plan
 ```
 
