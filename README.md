@@ -20,6 +20,7 @@ The documented migration target is Gateway API with Application Gateway for Cont
 - Coexistence and gradual cutover (run NGINX and AGC in parallel, traffic shift).
 - Observability before/after.
 - Operational runbook with checklists.
+- Sample app: [`examples/hello-world`](./examples/hello-world/README.md) with Workload Identity, internal AGC frontend, and Gateway API resources.
 
 ## What's out of scope
 
