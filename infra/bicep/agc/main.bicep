@@ -18,6 +18,7 @@ param name string
 param location string = resourceGroup().location
 
 @description('Azure resource ID of the subnet delegated to Microsoft.ServiceNetworking/trafficControllers. Caller must pre-create subnet with delegation.')
+@minLength(1)
 param subnetId string
 
 @description('Tags to apply to AGC resources')
