@@ -43,6 +43,14 @@ Pre-alpha. Backlog tracked as GitHub issues with the `squad` label.
 
 Multi-agent dev via [Squad by Brady Gaster](https://github.com/bradygaster/squad). Team in `.squad/team.md`. Routing in `.squad/routing.md`. Open `squad`-labeled issues are the live backlog.
 
+## Live smoke workflow
+
+`.github/workflows/smoke-test.yml` runs a live smoke pass for the hello-world sample. It is available on a weekly schedule and via `workflow_dispatch`.
+
+- Auth uses GitHub OIDC with `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` secrets.
+- The workflow is skip-safe when secrets are missing, for example on forks.
+- It captures baseline and AGC latency samples, asserts HTTP 200 plus expected body text, uploads artifacts, and then deletes the smoke resource group.
+
 ## License
 
 MIT.
