@@ -18,7 +18,15 @@ data "azapi_resource" "resource_group" {
 data "azapi_client_config" "current" {}
 
 locals {
-  location = coalesce(var.location, jsondecode(data.azapi_resource.resource_group.output).location)
+  resource_group_location = try(jsondecode(data.azapi_resource.resource_group.output).location, null)
+  location                = coalesce(var.location, local.resource_group_location)
+}
+
+check "location_resolved" {
+  assert {
+    condition     = local.location != null
+    error_message = "Unable to resolve location from resource group data. Set var.location explicitly."
+  }
 }
 
 # Application Gateway for Containers (trafficController)
