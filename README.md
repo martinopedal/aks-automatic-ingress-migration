@@ -31,6 +31,10 @@ The documented migration target is Gateway API with Application Gateway for Cont
 
 Pre-alpha. Backlog tracked as GitHub issues with the `squad` label.
 
+## Runbook security baseline
+
+- [Threat model, AGC migration path](docs/runbook/10-threat-model.md)
+
 ## Stack
 
 - Terraform (`azurerm` + `azapi`): primary IaC.
