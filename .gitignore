@@ -1,0 +1,8 @@
+# Ignore IDE/local artifacts
+.vscode/
+*.tfstate*
+.terraform/
+.env
+node_modules/
+__pycache__/
+
