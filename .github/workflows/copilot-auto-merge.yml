@@ -1,0 +1,47 @@
+name: copilot-auto-merge
+
+# When @copilot flips a PR from draft → ready for review, enable auto-merge
+# so the PR squash-merges itself once required checks are green. Human review
+# is still required if branch protection demands it; this only arms the merge.
+#
+# Author: Squad coordinator (Martin asked: "just allow copilot to merge as needed")
+
+on:
+  pull_request:
+    types: [ready_for_review, opened, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    if: >
+      github.event.pull_request.user.login == 'copilot-swe-agent[bot]' ||
+      github.event.pull_request.user.login == 'copilot-swe-agent' ||
+      github.event.pull_request.user.login == 'Copilot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip if still draft
+        if: github.event.pull_request.draft == true
+        run: |
+          echo "PR is still draft. Skipping."
+          exit 0
+
+      - name: Skip WIP titles
+        if: contains(github.event.pull_request.title, '[WIP]') || startsWith(github.event.pull_request.title, 'WIP')
+        run: |
+          echo "PR title still marked WIP. Skipping."
+          exit 0
+
+      - name: Enable auto-merge (squash)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr merge "$PR_NUMBER" \
+            --repo "$REPO" \
+            --auto \
+            --squash \
+            --delete-branch
