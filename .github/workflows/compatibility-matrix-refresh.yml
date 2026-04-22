@@ -1,0 +1,61 @@
+name: Compatibility Matrix Refresh
+
+on:
+  schedule:
+    - cron: '0 9 1 1,4,7,10 *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  open-refresh-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open quarterly refresh issue for Atlas
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const titlePrefix = 'Quarterly compatibility matrix refresh';
+            const now = new Date();
+            const quarter = Math.floor(now.getUTCMonth() / 3) + 1;
+            const year = now.getUTCFullYear();
+            const title = `${titlePrefix} ${year}-Q${quarter}`;
+
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'squad:atlas',
+              per_page: 100
+            });
+
+            const duplicate = existing.find(issue => issue.title === title);
+            if (duplicate) {
+              core.info(`Refresh issue already exists: #${duplicate.number}`);
+              return;
+            }
+
+            const body = [
+              'Quarterly refresh for `docs/compatibility-matrix.md`.',
+              '',
+              'Checklist:',
+              '- [ ] Verify AKS Automatic Kubernetes version guidance from Microsoft docs.',
+              '- [ ] Verify AGC ALB Controller release notes and update matrix.',
+              '- [ ] Verify Gateway API release track and update matrix.',
+              '- [ ] Verify ingress2gateway latest release and update matrix.',
+              '- [ ] Update `Last reviewed` date.',
+              '',
+              'Sources are listed in the matrix file.'
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body,
+              labels: ['squad', 'squad:atlas', 'type:docs', 'go:needs-research']
+            });
