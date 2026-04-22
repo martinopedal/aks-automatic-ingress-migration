@@ -1,0 +1,57 @@
+name: branch-protection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  administration: write
+
+jobs:
+  require-main-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = "main";
+            const requiredContexts = [
+              "gitleaks",
+              "Analyze (actions)",
+              "validate / terraform",
+              "validate / bicep",
+              "validate / manifests",
+              "dependency-review",
+            ];
+
+            let strict = true;
+            let contexts = [];
+            try {
+              const { data } = await github.request(
+                "GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks",
+                { owner, repo, branch }
+              );
+              strict = data.strict ?? true;
+              contexts = data.contexts ?? [];
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }
+
+            const mergedContexts = [...new Set([...contexts, ...requiredContexts])].sort();
+
+            await github.request(
+              "PATCH /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks",
+              {
+                owner,
+                repo,
+                branch,
+                strict,
+                contexts: mergedContexts,
+              }
+            );
+
+            core.info(`Required status checks for ${branch}: ${mergedContexts.join(", ")}`);
