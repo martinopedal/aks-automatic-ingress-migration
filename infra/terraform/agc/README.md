@@ -44,7 +44,6 @@ module "agc" {
 
   name                = "myagc"
   resource_group_name = azurerm_resource_group.example.name
-  location            = "eastus"
   subnet_id           = azurerm_subnet.agc.id
 
   tags = {
@@ -52,6 +51,8 @@ module "agc" {
     project     = "aks-migration"
   }
 }
+
+# location is optional. Defaults to resource group location when omitted.
 
 output "agc_frontend_fqdn" {
   value = module.agc.frontend_fqdn

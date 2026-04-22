@@ -17,11 +17,15 @@ data "azapi_resource" "resource_group" {
 
 data "azapi_client_config" "current" {}
 
+locals {
+  location = coalesce(var.location, jsondecode(data.azapi_resource.resource_group.output).location)
+}
+
 # Application Gateway for Containers (trafficController)
 resource "azapi_resource" "alb" {
   type      = "Microsoft.ServiceNetworking/trafficControllers@2023-11-01"
   name      = var.name
-  location  = var.location
+  location  = local.location
   parent_id = data.azapi_resource.resource_group.id
 
   body = {
@@ -35,7 +39,7 @@ resource "azapi_resource" "alb" {
 resource "azapi_resource" "frontend" {
   type      = "Microsoft.ServiceNetworking/trafficControllers/frontends@2023-11-01"
   name      = "${var.name}-frontend"
-  location  = var.location
+  location  = local.location
   parent_id = azapi_resource.alb.id
 
   body = {
@@ -49,7 +53,7 @@ resource "azapi_resource" "frontend" {
 resource "azapi_resource" "association" {
   type      = "Microsoft.ServiceNetworking/trafficControllers/associations@2023-11-01"
   name      = "${var.name}-association"
-  location  = var.location
+  location  = local.location
   parent_id = azapi_resource.alb.id
 
   body = {
