@@ -19,7 +19,7 @@ spec:
         - name: echo
           image: hashicorp/http-echo:1.0.0
           args:
-            - "-text=hello from agc"
+            - "-text=hello from AGC"
           ports:
             - name: http
               containerPort: 5678

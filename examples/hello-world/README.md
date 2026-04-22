@@ -62,7 +62,7 @@ curl -sS http://<agc-frontend-fqdn>/
 Expected response:
 
 ```text
-hello from agc
+hello from AGC
 ```
 
 ## References
