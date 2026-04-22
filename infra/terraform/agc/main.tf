@@ -18,14 +18,16 @@ data "azapi_resource" "resource_group" {
 data "azapi_client_config" "current" {}
 
 locals {
-  resource_group_location = try(jsondecode(data.azapi_resource.resource_group.output).location, null)
-  location                = coalesce(var.location, local.resource_group_location)
+  resource_group_payload        = try(jsondecode(data.azapi_resource.resource_group.output), null)
+  resource_group_output_decoded = local.resource_group_payload != null
+  resource_group_location       = try(local.resource_group_payload.location, null)
+  location                      = coalesce(var.location, local.resource_group_location)
 }
 
 check "location_resolved" {
   assert {
     condition     = local.location != null
-    error_message = "Unable to resolve location. Resource group response could not be decoded or did not include location. Set var.location explicitly."
+    error_message = "Unable to resolve location for resource group ${data.azapi_resource.resource_group.name}. Decoded output: ${local.resource_group_output_decoded}. Location present: ${local.resource_group_location != null}. Set var.location explicitly."
   }
 }
 
