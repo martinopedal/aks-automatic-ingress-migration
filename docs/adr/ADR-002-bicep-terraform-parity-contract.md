@@ -1,8 +1,10 @@
 # ADR-002: Bicep + Terraform Parity Contract
 
+*Not an official Microsoft product. Community migration toolkit. See LICENSE.*
+
 **Status:** Accepted  
 **Date:** 2026-04-22  
-**Deciders:** Forge, Lead  
+**Deciders:** Forge, Lead
 
 ## Context
 
