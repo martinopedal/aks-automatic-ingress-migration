@@ -17,7 +17,7 @@ This sample shows the minimum path for an AKS Automatic workload on Gateway API 
 Terraform:
 
 ```bash
-cd examples/hello-world/terraform
+cd <repo-root>/examples/hello-world/terraform
 terraform init
 terraform plan
 ```
@@ -54,6 +54,23 @@ kubectl apply -f examples/hello-world/manifests/
 ## 4) Validate traffic through AGC frontend
 
 Get the AGC frontend FQDN from Terraform or Bicep outputs, then test from a network path that can resolve and reach the internal frontend.
+
+Terraform output example:
+
+```bash
+cd <repo-root>/examples/hello-world/terraform
+terraform output -raw agc_frontend_fqdn
+```
+
+Bicep deployment output example:
+
+```bash
+az deployment group show \
+  --name agc-base \
+  --resource-group <rg> \
+  --query properties.outputs.agc_frontend_fqdn.value \
+  -o tsv
+```
 
 ```bash
 curl -sS http://<agc-frontend-fqdn>/
