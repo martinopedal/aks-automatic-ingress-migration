@@ -39,12 +39,12 @@ Creates the following Azure resources:
 ## Usage
 
 ```hcl
+# location is optional. Defaults to resource group location when omitted.
 module "agc" {
   source = "./infra/terraform/agc"
 
   name                = "myagc"
   resource_group_name = azurerm_resource_group.example.name
-  location            = "eastus"
   subnet_id           = azurerm_subnet.agc.id
 
   tags = {
