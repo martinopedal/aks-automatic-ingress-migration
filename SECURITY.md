@@ -24,6 +24,8 @@ Relevant vulnerability classes include:
 - Credential or secret leakage in example values, output files, or logs
 - Manifest patterns that expose workloads beyond the documented threat model
 
+Threat model reference: [docs/runbook/10-threat-model.md](docs/runbook/10-threat-model.md).
+
 ## Not in scope
 
 This repo is **not an official Microsoft product**. It is a personal community runbook. For Microsoft-supported migration tooling, see [Application-Gateway-for-Containers-Migration-Utility](https://github.com/Azure/Application-Gateway-for-Containers-Migration-Utility).
