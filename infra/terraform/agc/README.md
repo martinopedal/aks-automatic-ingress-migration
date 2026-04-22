@@ -39,6 +39,7 @@ Creates the following Azure resources:
 ## Usage
 
 ```hcl
+# location is optional. Defaults to resource group location when omitted.
 module "agc" {
   source = "./infra/terraform/agc"
 
@@ -51,8 +52,6 @@ module "agc" {
     project     = "aks-migration"
   }
 }
-
-# location is optional. Defaults to resource group location when omitted.
 
 output "agc_frontend_fqdn" {
   value = module.agc.frontend_fqdn
