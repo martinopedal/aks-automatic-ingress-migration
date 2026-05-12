@@ -8,7 +8,7 @@
 
 ## Context
 
-AKS Automatic users face a November 2026 deadline when Microsoft's App Routing addon with ingress-nginx will move to critical-only support, per [AKS ingress-nginx retirement guidance](https://learn.microsoft.com/en-us/azure/aks/http-application-routing-migrate). The migration path to Application Gateway for Containers (AGC) with Gateway API is well-defined in Microsoft documentation, but two upstream tools already exist in this space:
+AKS Automatic users face a November 2026 deadline when Microsoft's App Routing add-on (managed NGINX) will stop receiving Azure support, per the caution callout in [App routing Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api): "the managed NGINX add-on... will stop receiving Azure support from Azure after November 2026." The community ingress-nginx project itself enters maintenance mode in March 2026, per [Ingress NGINX retirement](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/). The migration path to Application Gateway for Containers (AGC) with Gateway API is well-defined in Microsoft documentation, but two upstream tools already exist in this space:
 
 1. **[Azure/Application-Gateway-for-Containers-Migration-Utility](https://github.com/Azure/Application-Gateway-for-Containers-Migration-Utility)**  
    - Microsoft-maintained CLI tool for translating AGIC or NGINX Ingress resources to Gateway API resources compatible with AGC.
@@ -72,8 +72,9 @@ We could rely on upstream tools and Microsoft documentation alone. Rejected beca
 
 ## References
 
-- [Application Gateway for Containers overview](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview)
-- [AKS App Routing addon retirement timeline](https://learn.microsoft.com/en-us/azure/aks/http-application-routing-migrate)
+- [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview)
+- [App routing Gateway API (preview), with November 2026 caution callout](https://learn.microsoft.com/azure/aks/app-routing-gateway-api)
+- [Ingress NGINX retirement, March 2026](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/)
 - [Azure/Application-Gateway-for-Containers-Migration-Utility](https://github.com/Azure/Application-Gateway-for-Containers-Migration-Utility)
 - [kubernetes-sigs/ingress2gateway](https://github.com/kubernetes-sigs/ingress2gateway)
 - [ingress2gateway v1.0.0 release](https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.0.0)
