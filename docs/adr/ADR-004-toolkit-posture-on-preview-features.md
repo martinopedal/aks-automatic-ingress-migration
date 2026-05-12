@@ -128,7 +128,7 @@ Rejected because:
 
 We could document both preview features neutrally without stating a clear recommendation. Let customers decide.
 
-Rejected because this is not opinionated. The toolkit's value is clear guidance. Customers facing the November 2026 deadline need to know what the safest, most production-ready path is. Neutrality is indecision, and indecision slows migration.
+Rejected because this is not opinionated. The toolkit's value is clear guidance. Customers facing the November 2026 deadline need to know what the safest, most stable path is. Neutrality is indecision, and indecision slows migration.
 
 ### Recommend preview for non-prod, Helm for prod
 

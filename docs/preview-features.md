@@ -95,7 +95,7 @@ kubectl get gatewayclass azure-alb-external
 | App Routing add-on (managed NGINX) | App Routing Gateway API impl (preview) | [Enable application routing with Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api) |
 | OSS NGINX (Helm-installed) on standard AKS | Migrate directly to AGC (Helm-installed ALB Controller, GA) or to App Routing Gateway API impl (preview) | [Quickstart: Deploy AGC ALB Controller (Helm)](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller) |
 | Adopting AGC on standard AKS | Helm-based ALB Controller (GA) OR AGC AKS add-on (preview) | [Quickstart: Deploy AGC ALB Controller AKS add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) |
-| Adopting AGC on **AKS Automatic** | **AGC AKS add-on (preview) only** — Helm install is unsupported on Automatic | [AGC FAQ, AKS Automatic support](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) |
+| Adopting AGC on **AKS Automatic** | **AGC AKS add-on (preview) only** (Helm install is unsupported on Automatic) | [AGC FAQ, AKS Automatic support](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) |
 
 Note that the AKS Automatic + AGC path requires preview feature flags `ManagedGatewayAPIPreview` and `ApplicationLoadBalancerPreview`. Per ADR-004, this toolkit treats preview features as documented alternatives and does not recommend them as the primary production path.
 
