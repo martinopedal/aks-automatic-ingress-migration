@@ -1,4 +1,4 @@
-# Phase 05 — Network policies, DNS, and certs
+# Phase 05, network policies, DNS, and certs
 
 ## Goal
 

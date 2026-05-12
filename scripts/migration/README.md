@@ -74,13 +74,13 @@ Exclude integration tests (require ingress2gateway binary):
 Invoke-Pester ./scripts/migration/tests -ExcludeTag integration
 ```
 
-## Design Philosophy
+## Design philosophy
 
-- **Read-only first:** All tools default to dry-run or preview mode
-- **Human-driven cutover:** Traffic shifts stay manual for safety
-- **Clear boundaries:** Each script has one responsibility
+All cmdlets default to dry-run or preview. `Convert-IngressToGateway` requires `-WhatIf:$false` or `-Force` to actually write files. `Get-MigrationAssessment` is read-only by design. `Invoke-TrafficCutover` produces a Markdown checklist; the actual DNS or Traffic Manager change stays a human decision because cutover failure modes (cache TTL, partial propagation, routing loops) need eyes on dashboards, not a script.
 
-See `.squad/decisions/inbox/forge-migration-scripts-philosophy.md` for details.
+Each script does one thing. Translation, inventory, and cutover are separate cmdlets so a failure in one does not contaminate the others.
+
+See `.squad/decisions/inbox/forge-migration-scripts-philosophy.md` for the full rationale.
 
 ## Links
 

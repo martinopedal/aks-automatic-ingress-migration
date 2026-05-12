@@ -1,4 +1,4 @@
-# Phase 02 — Provision AGC base infrastructure
+# Phase 02, provision AGC base infrastructure
 
 ## Goal
 

@@ -59,3 +59,34 @@ Activity log for Sage (Research and Runbook Author).
 **Quality gate before merge:** (1) Opening sentence stops scroll, (2) at least one specific technical detail, (3) concrete CTA, (4) no em dashes/banned phrases, (5) no AI structural patterns, (6) all date/default claims link to primary sources.
 
 **Next session:** Sage sweeps listed files, applies voice profile, commits with `chore(docs):` prefix.
+
+### 2026-05-12: Voice sweep executed (PR #49)
+
+Branch `chore/docs-voice-sweep`, 16 files modified, opened as PR #49.
+
+What the corpus actually looked like before the sweep, in order of frequency:
+
+1. The dominant violation was H1 em dashes in runbook phase headings. Every single phase file (`00-overview.md` through `09-rollback.md`, 10 files) used the pattern `# Phase NN — Title`. Replaced with `# Phase NN, title`. If a future contributor adds an `11-` or `12-` phase doc, they will almost certainly reach for the em dash by reflex. Worth a lint rule.
+
+2. The second most prevalent pattern was bold-heading-colon tricolon filler at the END of READMEs, packaged as `## Style` or `## Design Philosophy`. Two of three module READMEs ended with this pattern (`scripts/migration/README.md`, `presentation/README.md`). The hello-world README was clean. The pattern reads as a sign-off ritual, like a corporate values poster nailed to the bottom of the doc. Both were rewritten as prose paragraphs that name concrete cmdlets, failure modes, and references.
+
+3. Banned phrases were rare. Only two prose instances across 22 files (`leverage` in ADR-001, `accelerate` in ADR-003). All other matches for `accelerat` were inside the Microsoft product slug `landing-zone-accelerator` in URLs and link titles, which cannot be changed. The phrase list is doing more work than the count suggests, because authors self-censor against it once they know it exists.
+
+4. Title-case headings were the slow-burn issue: `Alternatives Considered`, `Refresh Procedure`, `What Parity Means`. Eight headings flipped to sentence case across the three ADRs and the compatibility matrix.
+
+5. Spelling drift (`Cost-optimised`, British) appeared once in a topology table in Phase 04. Worth a future pass with a configured spell list, but not urgent.
+
+What did NOT need rewriting:
+
+- Numbered ADR contract enumerations (e.g. ADR-002 `1. **Names.** Output keys match...`) read as semantic data, not decorative tricolon.
+- The `→` arrow character in `Ingress → HTTPRoute` and similar is not a dash, not an emoji, and not a bullet ornament. Voice profile is silent on it. Left in place. Reconsider if it spreads.
+- Words like `simplest`, `easy rollback`, `Smallest blast radius` in tables are pragmatic operational descriptors, not AI marketing tells.
+
+Things to watch for in future sweeps:
+
+- New phase docs reaching for em dashes in H1.
+- New READMEs ending with a `## Style` or `## Philosophy` tricolon coda.
+- Any spread of the `→` arrow into prose (currently only in titles and conversion arrows).
+- Any new `**Bold**: filler.` patterns introduced by Atlas, Iris, or Sentinel in their own docs as the contributor base grows.
+
+The corpus was in better shape than expected. Two phrase rewrites, one British spelling, eight heading flips, two README codas, and ten H1 em dashes. The voice profile is mostly preventing future drift, not cleaning up existing damage.

@@ -1,4 +1,4 @@
-# Phase 00 — Overview and preflight
+# Phase 00, overview and preflight
 
 ## Goal
 

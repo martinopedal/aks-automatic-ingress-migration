@@ -1,4 +1,4 @@
-# Phase 09 — Rollback paths
+# Phase 09, rollback paths
 
 ## Goal
 

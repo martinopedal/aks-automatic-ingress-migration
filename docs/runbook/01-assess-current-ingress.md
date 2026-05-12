@@ -1,4 +1,4 @@
-# Phase 01 — Assess current ingress estate
+# Phase 01, assess current ingress estate
 
 ## Goal
 

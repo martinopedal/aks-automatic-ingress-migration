@@ -1,4 +1,4 @@
-# Phase 04 — Translate Ingress manifests to Gateway + HTTPRoute
+# Phase 04, translate Ingress manifests to Gateway and HTTPRoute
 
 ## Goal
 
@@ -46,7 +46,7 @@ Decide before Phase 06 which topology you want. AGC supports both:
 
 | Topology | When to use |
 |---|---|
-| **Shared Gateway** per cluster (one `Gateway` in a platform namespace, app teams attach `HTTPRoute` via `parentRefs`) | Cost-optimised, central frontend cert mgmt, ALZ Corp default |
+| **Shared Gateway** per cluster (one `Gateway` in a platform namespace, app teams attach `HTTPRoute` via `parentRefs`) | Lowest cost, central frontend cert management, ALZ Corp default |
 | **Gateway per namespace** | Strong tenant isolation, multi-tenant clusters with hard boundaries |
 
 For ALZ Corp, prefer shared. The hello-world sample uses shared.
