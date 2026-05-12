@@ -1,15 +1,15 @@
 # aks-automatic-ingress-migration
 
-> **Not an official Microsoft product.** This is a personal community runbook. For Microsoft's supported migration utility, see [Application-Gateway-for-Containers-Migration-Utility](https://github.com/Azure/Application-Gateway-for-Containers-Migration-Utility) and the upstream [`ingress2gateway`](https://github.com/kubernetes-sigs/ingress2gateway) project (1.0 GA).
+> **Not an official Microsoft product.** This is a personal community runbook. For Microsoft's supported migration utility, see [Application-Gateway-for-Containers-Migration-Utility](https://github.com/Azure/Application-Gateway-for-Containers-Migration-Utility) and the upstream [`ingress2gateway`](https://github.com/kubernetes-sigs/ingress2gateway) project ([v1.1.0 latest, April 2026](https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.1.0); [v1.0.0 GA, March 2026](https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.0.0)).
 
-Migration toolkit and runbook for AKS Automatic clusters moving off `ingress-nginx` and the App Routing addon onto **Gateway API + Application Gateway for Containers (AGC)** before the November 2026 critical-only date.
+Migration toolkit and runbook for AKS Automatic clusters moving off `ingress-nginx` and the App Routing addon onto **Gateway API + Application Gateway for Containers (AGC)** before the [November 2026 critical-only date for the App Routing add-on](https://learn.microsoft.com/azure/aks/app-routing-gateway-api).
 
 ## Why this exists
 
 Two timelines collide for AKS Automatic users:
 
-- **March 2026**: community `ingress-nginx` project retires.
-- **November 2026**: Microsoft App Routing addon (managed NGINX) drops to critical-only patches.
+- **March 2026**: community `ingress-nginx` project enters maintenance mode, per [Ingress NGINX retirement](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/).
+- **November 2026**: Microsoft App Routing add-on (managed NGINX) stops receiving Azure support, per the caution callout in [App routing Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api).
 
 The documented migration target is Gateway API with Application Gateway for Containers. The Microsoft docs cover individual primitives. This repo covers the **end-to-end migration** for an ALZ Corp cluster: Terraform/Bicep for AGC, manifest conversion (Ingress → Gateway/HTTPRoute), traffic cutover, rollback, and the operational runbook.
 

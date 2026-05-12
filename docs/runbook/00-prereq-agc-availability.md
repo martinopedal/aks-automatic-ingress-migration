@@ -23,7 +23,7 @@ Before starting Phase 01, confirm:
 - [ ] You have **Network Contributor** on the spoke VNet (needed for AGC subnet delegation).
 - [ ] AKS cluster is on a supported Kubernetes version (see [AKS supported versions](https://learn.microsoft.com/azure/aks/supported-kubernetes-versions), accessed 2026-04-22).
 - [ ] `kubectl`, `helm`, `az` (with `aks-preview` extension), `terraform >= 1.6`, `pwsh >= 7.4` are on PATH.
-- [ ] `ingress2gateway` >= 0.3.0 is on PATH ([upstream releases](https://github.com/kubernetes-sigs/ingress2gateway/releases), accessed 2026-04-22).
+- [ ] `ingress2gateway` >= v1.0.0 ([v1.1.0 latest, April 2026](https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.1.0)) is on PATH.
 - [ ] Read [ADR-003](../adr/ADR-003-agc-private-cluster-preview-gate.md). If your cluster is private and AGC private cluster support is still in preview in your region, you may need a public bastion path for validation.
 
 **Canonical region list:** See the live list at [Application Gateway for Containers overview, Supported regions](https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions). Snapshot in [`docs/agc-region-matrix.md`](../agc-region-matrix.md).
