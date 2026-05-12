@@ -73,7 +73,7 @@ echo "principalId=$PRINCIPAL_ID"
 echo "scope=$AGC_RESOURCE_ID"
 ```
 
-Use the AGC ALB controller setup documentation to select the exact role for your deployment mode: [AGC ALB controller quickstart with Helm](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-helm) and [AGC ALB controller quickstart with AKS add-on](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon).
+Use the AGC ALB controller setup documentation to select the exact role for your deployment mode: [AGC ALB controller quickstart with Helm](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-helm) and [AGC ALB controller quickstart with AKS add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon).
 
 ## 6) Validate token flow and controller health
 
@@ -99,8 +99,8 @@ If validation fails:
 
 ## References
 
-- [Use Microsoft Entra Workload ID with AKS](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview)
-- [Deploy and configure Workload Identity on AKS](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster)
-- [Workload identity federation concepts in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/workload-id/workload-identity-federation)
-- [AGC ALB controller quickstart with Helm](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-helm)
-- [AGC ALB controller quickstart with AKS add-on](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon)
+- [Use Microsoft Entra Workload ID with AKS](https://learn.microsoft.com/azure/aks/workload-identity-overview)
+- [Deploy and configure Workload Identity on AKS](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster)
+- [Workload identity federation concepts in Microsoft Entra ID](https://learn.microsoft.com/entra/workload-id/workload-identity-federation)
+- [AGC ALB controller quickstart with Helm](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-helm)
+- [AGC ALB controller quickstart with AKS add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon)

@@ -49,6 +49,6 @@ kubectl apply --dry-run=server -f manifests/<file>.yaml
 ## References
 
 - Gateway API specification: https://gateway-api.sigs.k8s.io/
-- AGC documentation: https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/
+- AGC documentation: https://learn.microsoft.com/azure/application-gateway/for-containers/
 - ingress2gateway: https://github.com/kubernetes-sigs/ingress2gateway
 - Migration runbook: `docs/runbook/04-translate-manifests.md`

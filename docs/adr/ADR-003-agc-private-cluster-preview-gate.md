@@ -8,7 +8,7 @@
 
 ## Context
 
-ADR-001 established ALZ Corp as the default positioning for this repository. ALZ Corp means hub-spoke networks with central Azure Firewall egress, no public IPs on AKS nodes, and private cluster API servers. This is the Microsoft-recommended architecture for enterprise AKS deployments, per [Azure Landing Zone guidance](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/aks/landing-zone-accelerator).
+ADR-001 established ALZ Corp as the default positioning for this repository. ALZ Corp means hub-spoke networks with central Azure Firewall egress, no public IPs on AKS nodes, and private cluster API servers. This is the Microsoft-recommended architecture for enterprise AKS deployments, per [Azure Landing Zone guidance](https://learn.microsoft.com/azure/cloud-adoption-framework/scenarios/app-platform/aks/landing-zone-accelerator).
 
 Application Gateway for Containers (AGC) is generally available, with feature support including Web Application Firewall (WAF), per [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview) (accessed 2026-05-13). However, deployment paths supported on AKS Automatic and on AKS clusters with private API servers warrant explicit verification before adoption.
 
@@ -33,11 +33,11 @@ Concrete deliverables:
 
 2. **Per-region availability matrix:** `docs/agc-region-matrix.md` is the canonical region list for the toolkit, sourced from the AGC overview's [Supported regions](https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions) section. This ADR does not embed a duplicate region list; readers should consult that file for the verified list.
 
-3. **Quarterly review cadence:** Sage owns a recurring task to check the [Azure Updates page](https://azure.microsoft.com/en-us/updates/) and AGC documentation quarterly. If GA is announced, `docs/runbook/00-prereq-agc-availability.md` and `docs/agc-region-matrix.md` are updated, and the runbook prerequisite check is relaxed or removed.
+3. **Quarterly review cadence:** Sage owns a recurring task to check the [Azure Updates page](https://azure.microsoft.com/updates/) and AGC documentation quarterly. If GA is announced, `docs/runbook/00-prereq-agc-availability.md` and `docs/agc-region-matrix.md` are updated, and the runbook prerequisite check is relaxed or removed.
 
 4. **Escalation path:** The prerequisite document includes links to:
-   - [Azure support request process](https://learn.microsoft.com/en-us/azure/azure-portal/supportability/how-to-create-azure-support-request)
-   - [Azure preview feature registration guidance](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/preview-features)
+   - [Azure support request process](https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request)
+   - [Azure preview feature registration guidance](https://learn.microsoft.com/azure/azure-resource-manager/management/preview-features)
    - The AKS feedback forum at [feedback.azure.com](https://feedback.azure.com/d365community/forum/8ae9bf04-8326-ec11-b6e6-000d3a4f0789?&c=69637543-1829-ee11-bdf4-000d3a1ab360)
 
 This ADR does not mandate creating the full content of `docs/runbook/00-prereq-agc-availability.md` or `docs/agc-region-matrix.md` immediately. It defines the structure and commits to producing them. Those files will be delivered under separate tracked issues.
