@@ -127,3 +127,45 @@ The corpus was in better shape than expected. Two phrase rewrites, one British s
 **Branch hygiene:** Initial commit landed on `chore/docs-voice-sweep` (the prior session's branch from PR #49). Moved it cleanly to a dedicated `chore/presentation-redesign` branch via `git rebase --onto origin/main chore/docs-voice-sweep chore/presentation-redesign` so PR #50 ships as a single commit on top of `main`, independent of #49.
 
 **Final stats:** 1171 lines, 49,449 bytes, 35 `<section>` open/close pairs balanced, 107 `<div>` open/close pairs balanced, 30 inner slides across 5 outer sections.
+
+## 2026-05-12: Public source citation fix (PR #55 closed, replacement work)
+
+**Task:** Rewrite docs/agc-region-matrix.md and create docs/preview-features.md with proper MS Learn inline citations. Fix fabrication issue from closed PR #55.
+
+**Context:**
+- User directive: "only use external source material in the repo" + "public material". Every external claim must have an inline link to learn.microsoft.com or upstream GitHub.
+- Voice profile lines 86, 102 mandate citation rigor but it was bypassed in previous wave.
+- Previous PR #55 closed unmerged because agc-region-matrix.md fabricated regions:
+  - **Incorrectly included:** Canada East, Sweden Central, UK West, Japan East (NOT on MS Learn)
+  - **Missed:** Brazil South, Central India, Korea Central, UAE North (ARE on MS Learn)
+  - Source line "Microsoft Learn AGC overview page accessed 2026-05-12" was inaccurate sourcing (no inline link, no section anchor)
+
+**Verified facts provided by Martin (from MS Learn fetched 2026-05-12, exact use required):**
+- AGC supported regions: exactly 23 regions, source https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions
+- App Routing Gateway API impl (preview): feature flag AppRoutingIstioGatewayAPIPreview, GatewayClass approuting-istio, Istio 1.28 max, source https://learn.microsoft.com/azure/aks/app-routing-gateway-api
+- AGC ALB Controller AKS add-on (preview): feature flags ManagedGatewayAPIPreview + ApplicationLoadBalancerPreview, auto-creates managed identity applicationloadbalancer-<cluster-name>, source https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon
+- Ingress NGINX retirement: project maintenance ends March 2026, AKS App Routing critical patches end November 2026
+
+**Files modified:**
+1. `docs/agc-region-matrix.md`: Replaced fabricated 23+ region list with exact 23-region list (alphabetized). Added inline citation with section anchor. Added snapshot warning.
+2. `docs/preview-features.md`: Created new doc with three sections: App Routing Gateway API impl (preview), AGC ALB Controller AKS add-on (preview), migration paths table. All claims cited inline with MS Learn URLs.
+3. `README.md`: Added Resources > Preview features subsection linking to preview-features.md.
+4. `docs/runbook/00-prereq-agc-availability.md`: Added two callouts: canonical region list (links MS Learn), preview alternatives (links preview-features.md).
+
+**Learnings:**
+1. **Never invent lists.** Region lists, version numbers, feature flags, and dates must be copied verbatim from MS Learn or upstream GitHub with exact inline citation. Previous wave failed because I treated the MS Learn page as a rough guide instead of canonical source.
+2. **Always cite inline near claim.** Voice profile line 86: "Citations to external docs go inline near the claim, not parked in a References section that nobody scrolls to." Previous wave had a trailing References section but no inline citation where the region table appeared. Inline citation prevents reader from questioning source mid-read.
+3. **Verify against MS Learn fetch when in doubt.** Martin provided verified facts because I bypassed verification in the prior wave. When a claim feels uncertain (region count, preview status, retirement date), fetch MS Learn directly or ask for verified facts instead of inferring from memory or stale sources.
+4. **Section anchors matter.** Citation format `https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions` with section anchor is more precise than bare URL. Anchors let readers jump to exact claim source.
+5. **Snapshot warnings for volatile data.** Region lists and preview status change over time. Added "This is a snapshot. The MS Learn page is canonical. Verify before deployment." so readers know to check live source before acting.
+
+**Quality gate applied:**
+- Voice profile line 102: "Every factual claim about a date or default behaviour links to a primary source."
+- All external claims now cite learn.microsoft.com or github.com inline.
+- No em dashes, no banned phrases, only allowed emojis (none used in this set).
+- No question-then-answer rhythm, no bold-heading-list filler.
+
+**Next steps:**
+- Push branch `chore/wave2-sage-public-sources` and open PR.
+- Decision summary to `.squad/decisions/inbox/sage-wave2-public-sources.md`.
+- Watch for ADR-004 (Lead is drafting) re toolkit posture on preview features. Preview-features.md links to it even though not yet present.
