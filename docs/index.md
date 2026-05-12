@@ -15,7 +15,7 @@ Start at the runbook overview. Each phase is independently runnable and ends wit
 | Path | What you get |
 |---|---|
 | [Architecture decisions](./adr/) | ADR-001 positioning, ADR-002 Bicep+Terraform parity contract, ADR-003 AGC private cluster preview gate |
-| [Migration runbook](./runbook/00-overview.md) | 10-phase end-to-end runbook from assessment to rollback |
+| [Migration runbook](./runbook/00-prereq-agc-availability.md) | 10-phase end-to-end runbook from assessment to rollback |
 | [Quickstart sample](../examples/hello-world/README.md) | Smallest reproducible AGC + Gateway API + Workload Identity demo, ALZ Corp defaults |
 | [Migration helper scripts](../scripts/migration/README.md) | PowerShell cmdlets for assessment, conversion, and traffic cutover |
 | [Presentation deck](../presentation/README.md) | reveal.js HTML deck for internal briefings |

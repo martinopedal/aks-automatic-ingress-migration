@@ -48,7 +48,7 @@ AGC requires:
 
 ## Private cluster considerations
 
-As of 2026-04-22, AGC support for **private AKS clusters** is in preview in some regions and may have different availability or limitations. Refer to [ADR-003: AGC Private Cluster Preview Status Gate](./adr/ADR-003-agc-private-cluster-preview-gate.md) and the runbook phase [00: AGC Availability Prerequisites](./runbook/00-overview.md) before proceeding with a private cluster deployment.
+As of 2026-04-22, AGC support for **private AKS clusters** is in preview in some regions and may have different availability or limitations. Refer to [ADR-003: AGC Private Cluster Preview Status Gate](./adr/ADR-003-agc-private-cluster-preview-gate.md) and the runbook phase [00: AGC Availability Prerequisites](./runbook/00-prereq-agc-availability.md) before proceeding with a private cluster deployment.
 
 ## References
 

@@ -1,4 +1,4 @@
-# Phase 00, overview and preflight
+# Phase 00, AGC availability prerequisites
 
 ## Goal
 
