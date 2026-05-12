@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKS Automatic: ingress-nginx → AGC Migration</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+    <style>
+        .reveal h1 { font-size: 2.5em; text-transform: none; }
+        .reveal h2 { font-size: 2em; text-transform: none; }
+        .reveal h3 { font-size: 1.5em; text-transform: none; }
+        .reveal pre { font-size: 0.5em; }
+        .reveal code { font-family: 'Courier New', monospace; }
+        .reveal .timeline { font-size: 0.9em; line-height: 1.6; }
+        .reveal .citation { font-size: 0.6em; color: #888; margin-top: 1em; }
+        .reveal .warning { color: #ff6b6b; font-weight: bold; }
+        .reveal .preview { color: #ffd93d; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+<!-- SECTION 1: THE CLOCK IS TICKING -->
+<section>
+    <section>
+        <h1>AKS Automatic</h1>
+        <h2>ingress-nginx → AGC Migration</h2>
+        <p>Before the clock runs out</p>
+        <aside class="notes">
+            This deck walks through the ingress-nginx retirement timeline, the Gateway API mental model shift, where Application Gateway for Containers fits in Azure Landing Zone Corp, and a 10-phase runbook to migrate before the November 2026 deadline. Citations are provided for all retirement dates and technical claims.
+        </aside>
+    </section>
+
+    <section>
+        <h2>Two collision dates</h2>
+        <div class="timeline">
+            <p><strong class="warning">March 2026:</strong> Community ingress-nginx project retires</p>
+            <p><strong class="warning">November 2026:</strong> Microsoft App Routing addon drops to critical-only patches</p>
+        </div>
+        <p class="citation">
+            Source: <a href="https://github.com/kubernetes/ingress-nginx/issues/10977">kubernetes/ingress-nginx#10977</a><br>
+            Source: <a href="https://learn.microsoft.com/azure/aks/app-routing">MS Docs: App Routing addon retirement</a>
+        </p>
+        <aside class="notes">
+            The community ingress-nginx controller project announced retirement for March 2026. Microsoft's App Routing addon, which wraps ingress-nginx, will stop receiving feature updates and drop to critical-only patches in November 2026. After that date, no bug fixes, no security patches except critical CVEs. You cannot stay on ingress-nginx indefinitely.
+        </aside>
+    </section>
+
+    <section>
+        <h2>Why now?</h2>
+        <ul>
+            <li>Migration planning requires 3-6 months for ALZ Corp environments</li>
+            <li>AGC private cluster support is still <span class="preview">PREVIEW</span> (critical prerequisite)</li>
+            <li>Translation tooling (ingress2gateway) is GA, but annotation gaps exist</li>
+            <li>Runbook testing needs production-like network topology</li>
+        </ul>
+        <aside class="notes">
+            ALZ Corp environments need hub-spoke topology, Azure Firewall egress, private cluster APIs, and Workload Identity. This is not a weekend project. AGC private cluster support remains in preview as of April 2026, with no published GA date. You need time to validate the full stack, test failover scenarios, and train your SRE team on Gateway API concepts.
+        </aside>
+    </section>
+
+    <section>
+        <h2>Migration target</h2>
+        <ul>
+            <li><strong>Gateway API</strong> (Kubernetes standard, vendor-neutral)</li>
+            <li><strong>Application Gateway for Containers</strong> (Microsoft managed ingress)</li>
+            <li><strong>AKS Automatic</strong> (opinionated cluster profile)</li>
+        </ul>
+        <p class="citation">
+            Source: <a href="https://gateway-api.sigs.k8s.io/">Gateway API official site</a><br>
+            Source: <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/overview">MS Docs: AGC overview</a>
+        </p>
+        <aside class="notes">
+            Gateway API is the Kubernetes SIG Network standard for ingress and service mesh routing. It is vendor-neutral and GA since October 2023. AGC is Microsoft's managed ingress controller that implements Gateway API. AKS Automatic is the opinionated cluster profile that simplifies addon lifecycle, but you can run AGC on standard AKS clusters as well.
+        </aside>
+    </section>
+
+    <section>
+        <h2>What this repo provides</h2>
+        <ul>
+            <li>10-phase runbook for ALZ Corp environments</li>
+            <li>Terraform + Bicep IaC with enforced output parity</li>
+            <li>Helm charts for AGC controller + Gateway API CRDs</li>
+            <li>Translation guidance (uses ingress2gateway v1.0 GA)</li>
+            <li>Validation scripts (dry-run, breaking-change detection)</li>
+        </ul>
+        <aside class="notes">
+            This repository is an orchestration layer. It does not reinvent translation tools. Instead, it delegates to ingress2gateway (the official Kubernetes SIG Network translator) and focuses on the ALZ Corp end-to-end story: network topology, identity, IaC, runbook phases, and validation gates.
+        </aside>
+    </section>
+</section>
+
+<!-- SECTION 2: WHAT CHANGES -->
+<section>
+    <section>
+        <h2>What changes?</h2>
+        <p>The mental model</p>
+        <aside class="notes">
+            Ingress resources are monolithic. Gateway API splits the ingress concern into three resources with role separation: GatewayClass (infra owner), Gateway (cluster operator), and HTTPRoute (app developer). This separation enables better RBAC, multi-tenant routing, and clearer ownership boundaries.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Ingress: one resource type</h3>
+        <pre><code class="yaml">apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 8080</code></pre>
+        <aside class="notes">
+            Ingress resources mix infrastructure decisions (TLS termination, load balancer flavor) with application routing (host, path, backend service). Annotations are vendor-specific and not portable. The ingressClassName field was added in Kubernetes 1.18 to allow multiple ingress controllers in one cluster, but it does not solve the role separation problem.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Gateway API: three resources, role separation</h3>
+        <pre><code class="yaml">apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: azure-alb
+spec:
+  controllerName: azure.com/alb-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: example-gateway
+  namespace: infra
+spec:
+  gatewayClassName: azure-alb
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: api-route
+  namespace: app
+spec:
+  parentRefs:
+  - name: example-gateway
+    namespace: infra
+  hostnames:
+  - example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api
+    backendRefs:
+    - name: api-service
+      port: 8080</code></pre>
+        <aside class="notes">
+            GatewayClass is managed by the infrastructure owner (AGC controller). Gateway is managed by the cluster operator (SRE team) and defines listeners and TLS policy. HTTPRoute is managed by the app developer and defines routing rules. This separation allows different teams to own their slice without stepping on each other. HTTPRoute can reference a Gateway in a different namespace (cross-namespace routing).
+        </aside>
+    </section>
+
+    <section>
+        <h3>Annotation translation</h3>
+        <ul>
+            <li>Most ingress-nginx annotations do not have Gateway API equivalents</li>
+            <li>ingress2gateway v1.0 GA translates common patterns</li>
+            <li>You must manually review vendor-specific annotations</li>
+        </ul>
+        <p class="citation">
+            Source: <a href="https://github.com/kubernetes-sigs/ingress2gateway">kubernetes-sigs/ingress2gateway</a>
+        </p>
+        <aside class="notes">
+            ingress-nginx has over 100 annotations. Gateway API favors first-class fields over annotations. ingress2gateway translates rewrite-target, CORS, rate limiting, and a few others, but many annotations (auth, custom headers, Lua snippets) have no equivalent. You must audit your Ingress manifests, identify which annotations are in use, and determine if AGC supports the feature natively or if you need to implement it at the application layer.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Known gaps</h3>
+        <ul>
+            <li>Lua snippets (not supported by AGC)</li>
+            <li>Custom auth annotations (use Azure AD pod-managed identity instead)</li>
+            <li>Advanced rate limiting (AGC supports basic rate limiting only)</li>
+            <li>Canary deployments (use Argo Rollouts or Flagger with Gateway API)</li>
+        </ul>
+        <aside class="notes">
+            ingress-nginx allows arbitrary Lua code in configuration-snippet annotations. AGC does not support this. If you rely on Lua for header manipulation or custom logic, you must move that logic into your application or use a sidecar proxy. For authentication, prefer Azure AD Workload Identity and application-layer token validation. For canary deployments, use progressive delivery tools like Argo Rollouts or Flagger, which have Gateway API support.
+        </aside>
+    </section>
+
+    <section>
+        <h3>HTTPS and TLS</h3>
+        <ul>
+            <li>Ingress: TLS block with Secret reference</li>
+            <li>Gateway API: TLS mode on Gateway listener, Secret reference in same namespace</li>
+            <li>AGC supports TLS termination with Azure Key Vault integration</li>
+        </ul>
+        <p class="citation">
+            Source: <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/how-to-ssl-offloading-gateway-api">MS Docs: AGC SSL offloading</a>
+        </p>
+        <aside class="notes">
+            In Ingress, you define a TLS block with a secretName pointing to a Kubernetes Secret containing the certificate. In Gateway API, you define a TLS mode on the Gateway listener (Terminate or Passthrough) and reference the Secret in the same namespace as the Gateway. AGC integrates with Azure Key Vault, so you can use the Key Vault CSI driver to sync certificates into Kubernetes Secrets automatically.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Readiness checklist</h3>
+        <ul>
+            <li>Audit all Ingress resources and annotations</li>
+            <li>Run ingress2gateway and review the output</li>
+            <li>Identify gaps (Lua, custom auth, advanced rate limiting)</li>
+            <li>Plan for app-layer changes or drop unsupported features</li>
+            <li>Test in a non-production cluster first</li>
+        </ul>
+        <aside class="notes">
+            Do not start the migration until you have a complete inventory of your Ingress resources. Use kubectl get ingress --all-namespaces -o yaml to export everything. Run ingress2gateway to see what translates cleanly. For each annotation that does not translate, decide: can we drop it, can we implement it at the app layer, or is it a blocker? Document your decisions in an ADR or runbook addendum.
+        </aside>
+    </section>
+</section>
+
+<!-- SECTION 3: WHERE AGC LIVES IN ALZ CORP -->
+<section>
+    <section>
+        <h2>Where AGC lives in ALZ Corp</h2>
+        <aside class="notes">
+            Azure Landing Zone Corp is the enterprise network topology that most large organizations use. It includes a central hub VNet with Azure Firewall for egress, spoke VNets for workloads, no public IPs on compute, and private endpoints for PaaS services. AGC must fit into this topology without breaking the security model.
+        </aside>
+    </section>
+
+    <section>
+        <h3>ALZ Corp shape</h3>
+        <ul>
+            <li>Hub VNet: Azure Firewall, VPN Gateway, Bastion</li>
+            <li>Spoke VNet: AKS cluster, delegated subnet for AGC</li>
+            <li>No public IPs on AKS nodes</li>
+            <li>Private cluster API server</li>
+            <li>Egress via Azure Firewall UDR</li>
+        </ul>
+        <p class="citation">
+            Source: <a href="https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/">MS Docs: Azure Landing Zones</a>
+        </p>
+        <aside class="notes">
+            In ALZ Corp, the hub VNet is managed by the central networking team. The spoke VNet is managed by the workload team. AKS clusters run in spoke VNets with no public IPs. The API server is private (accessible only via VPN or ExpressRoute). All egress traffic from AKS pods is routed to the Azure Firewall in the hub via a user-defined route. AGC must work within this locked-down topology.
+        </aside>
+    </section>
+
+    <section>
+        <h3>AGC placement</h3>
+        <ul>
+            <li>AGC requires a delegated subnet in the spoke VNet</li>
+            <li>AGC frontend can be internal (private IP) or external (public IP)</li>
+            <li>For ALZ Corp, use internal frontend</li>
+            <li>Expose AGC via Front Door or Application Gateway in hub</li>
+        </ul>
+        <aside class="notes">
+            AGC needs a subnet with delegation to Microsoft.ServiceNetworking/trafficControllers. This subnet must have enough IP space for the AGC control plane and data plane instances (recommend /24 or larger). For ALZ Corp, configure AGC with an internal frontend (private IP). Then, place a public-facing Azure Front Door or Application Gateway in the hub VNet, and configure it to forward traffic to the AGC internal IP. This keeps the AKS nodes and AGC instances fully private.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Architecture diagram</h3>
+        <pre><code>Internet → Front Door (hub) → Azure Firewall (hub) → AGC (spoke) → AKS pods (spoke)</code></pre>
+        <ul>
+            <li>Front Door: DDoS protection, WAF, global load balancing</li>
+            <li>Azure Firewall: egress filtering, threat intelligence</li>
+            <li>AGC: ingress controller, TLS termination, routing</li>
+            <li>AKS pods: application workloads</li>
+        </ul>
+        <aside class="notes">
+            Traffic enters via Front Door in the hub VNet. Front Door terminates TLS and performs WAF inspection. It forwards requests to AGC in the spoke VNet. AGC terminates TLS again (if configured) and routes to the correct AKS pod. Return traffic follows the reverse path. Egress traffic from AKS pods goes via Azure Firewall UDR. This design satisfies ALZ Corp security requirements: no public IPs on AKS, centralized egress control, defense in depth.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Workload Identity</h3>
+        <ul>
+            <li>AGC controller pod needs Azure RBAC permissions</li>
+            <li>Use Workload Identity (federated credentials)</li>
+            <li>Never use service principal secrets in the cluster</li>
+        </ul>
+        <p class="citation">
+            Source: <a href="https://learn.microsoft.com/azure/aks/workload-identity-overview">MS Docs: Workload Identity overview</a>
+        </p>
+        <aside class="notes">
+            The AGC controller pod must create and update Azure resources (Application Gateway for Containers instances, frontend configurations, routing rules). Instead of storing a service principal secret in a Kubernetes Secret, use Workload Identity. The AKS cluster has an OIDC issuer. You create a federated credential on a managed identity, bind it to a Kubernetes ServiceAccount, and project the token into the AGC controller pod. The pod exchanges the token for an Azure AD token at runtime. This eliminates secret sprawl and aligns with zero-trust principles.
+        </aside>
+    </section>
+
+    <section>
+        <h3><span class="preview">PREVIEW</span> reality check</h3>
+        <p class="warning">AGC private cluster support is still in PREVIEW as of April 22, 2026.</p>
+        <ul>
+            <li>No published GA date</li>
+            <li>Production use at your own risk</li>
+            <li>This is a hard prerequisite for ALZ Corp deployments</li>
+        </ul>
+        <p class="citation">
+            Source: <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/private-cluster-support">MS Docs: AGC private cluster support (preview)</a><br>
+            Verified: April 22, 2026 (ADR-003)
+        </p>
+        <aside class="notes">
+            This is the biggest blocker. ALZ Corp requires private cluster API servers. AGC private cluster support was announced in preview, but as of April 22, 2026, it has not reached GA. Microsoft has not published a GA date. The runbook Phase 00 explicitly documents this as a prerequisite. If you cannot wait for GA, you must accept preview SLA terms (no production support guarantee, breaking changes possible). Document this risk in your change advisory board submission.
+        </aside>
+    </section>
+
+    <section>
+        <h3>IaC parity</h3>
+        <ul>
+            <li>Every example ships in Terraform and Bicep</li>
+            <li>Output schema enforced via outputs.schema.json</li>
+            <li>Wrapper modules can consume either</li>
+        </ul>
+        <p class="citation">
+            Source: ADR-002 (Bicep-Terraform parity contract)
+        </p>
+        <aside class="notes">
+            Some teams use Terraform, some teams use Bicep. This repo provides both. ADR-002 defines a contract: Terraform modules and Bicep modules must produce the same outputs (same names, same types, same semantics). We validate this with outputs.schema.json files. If you write a wrapper module that calls these modules, you can swap between Terraform and Bicep without changing the wrapper. This is critical for enterprises with mixed IaC tooling.
+        </aside>
+    </section>
+</section>
+
+<!-- SECTION 4: THE RUNBOOK -->
+<section>
+    <section>
+        <h2>The runbook</h2>
+        <p>10 phases from prerequisites to decommission</p>
+        <aside class="notes">
+            The runbook is the centerpiece of this repository. It breaks the migration into 10 phases with clear gates, validation scripts, and rollback procedures. Each phase has a README with step-by-step instructions, expected outcomes, and troubleshooting tips. Do not skip phases. Do not merge phases. The order matters.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Phase timeline</h3>
+        <div class="timeline">
+            <p><strong>Phase 00:</strong> Prerequisites (1-2 weeks)</p>
+            <p><strong>Phase 01:</strong> Inventory</p>
+            <p><strong>Phase 02:</strong> Network prep (1-2 weeks)</p>
+            <p><strong>Phase 03:</strong> Identity (1 week)</p>
+            <p><strong>Phase 04:</strong> Deploy AGC (1 week)</p>
+            <p><strong>Phase 05:</strong> Translate manifests (1-2 weeks)</p>
+            <p><strong>Phase 06:</strong> Test in staging</p>
+            <p><strong>Phase 07:</strong> Traffic split</p>
+            <p><strong>Phase 08:</strong> Monitor and validate</p>
+            <p><strong>Phase 09:</strong> Decommission ingress-nginx</p>
+        </div>
+        <aside class="notes">
+            Phase 00 is the longest because it depends on Microsoft GA dates. Phases 02-04 are network and identity setup (mostly IaC). Phase 05 is translation and manual review (annotation gaps). Phases 07-08 are traffic cutover with rollback procedures. Phase 09 is cleanup. Allow 3-6 months end to end for a production ALZ Corp environment.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Phase 00: Prerequisites</h3>
+        <ul>
+            <li>AGC private cluster support reaches GA (BLOCKER)</li>
+            <li>AKS cluster on supported version (1.27+)</li>
+            <li>Gateway API CRDs installed (v1)</li>
+            <li>Hub-spoke VNets and peering configured</li>
+            <li>Azure Firewall UDR for egress</li>
+        </ul>
+        <aside class="notes">
+            Do not proceed until AGC private cluster support is GA, or you have accepted the preview risk. Verify your AKS cluster is on a supported Kubernetes version (1.27 or later). Install Gateway API CRDs v1 (not v1beta1). Confirm your hub-spoke VNets are peered and the Azure Firewall UDR is in place. If any of these are missing, pause and fix them before moving to Phase 01.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Phase 02-03: Network and identity</h3>
+        <ul>
+            <li>Create delegated subnet for AGC in spoke VNet</li>
+            <li>Create managed identity for AGC controller</li>
+            <li>Assign RBAC roles (Network Contributor, Managed Identity Operator)</li>
+            <li>Configure federated credential for Workload Identity</li>
+            <li>Deploy AGC Helm chart with identity binding</li>
+        </ul>
+        <aside class="notes">
+            Use the Terraform or Bicep modules in this repo to create the delegated subnet and managed identity. The subnet must have Microsoft.ServiceNetworking/trafficControllers delegation. The managed identity needs Network Contributor on the subnet and Managed Identity Operator on itself. Create a federated credential with subject system:serviceaccount:azure-alb-system:alb-controller. Deploy the AGC Helm chart with the managed identity client ID in values.yaml. Verify the controller pod starts and does not log identity errors.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Phase 04: Deploy AGC</h3>
+        <ul>
+            <li>Deploy GatewayClass (controllerName: azure.com/alb-controller)</li>
+            <li>Deploy Gateway with internal frontend</li>
+            <li>Verify AGC provisions the Azure Application Gateway for Containers resource</li>
+            <li>Verify the internal IP is routable from hub VNet</li>
+        </ul>
+        <aside class="notes">
+            Apply the GatewayClass manifest. This tells the AGC controller to manage gateways of this class. Apply the Gateway manifest with an internal frontend annotation. The AGC controller will provision an Azure Application Gateway for Containers resource and assign a private IP. Use kubectl get gateway to see the IP. From a VM in the hub VNet, curl the IP to verify network reachability. If you cannot reach the IP, check NSGs, UDRs, and subnet delegation.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Phase 05-06: Translate and test</h3>
+        <ul>
+            <li>Run ingress2gateway on all Ingress manifests</li>
+            <li>Manually review HTTPRoute output (check hostnames, paths, backends)</li>
+            <li>Identify annotation gaps and plan workarounds</li>
+            <li>Deploy HTTPRoutes to staging cluster</li>
+            <li>Run smoke tests (happy path, 404, 503, TLS)</li>
+        </ul>
+        <aside class="notes">
+            Export all Ingress resources to a directory. Run ingress2gateway ingress-dir/ -o gateway-dir/. Review the generated HTTPRoute manifests. Check that hostnames, path matching, and backend service references are correct. For each ingress-nginx annotation that did not translate, decide how to handle it. Deploy the HTTPRoutes to a staging AKS cluster with AGC. Run your smoke test suite. Do not proceed to production until staging is green.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Phase 09: Decommission</h3>
+        <ul>
+            <li>After 2-4 weeks of stable AGC traffic, decommission ingress-nginx</li>
+            <li>Delete Ingress resources</li>
+            <li>Uninstall ingress-nginx Helm chart</li>
+            <li>Remove ingress-nginx LoadBalancer service</li>
+            <li>Update DNS to point to AGC frontend</li>
+        </ul>
+        <aside class="notes">
+            Do not rush this phase. Run dual-stack (ingress-nginx and AGC) in production for at least 2 weeks, ideally 4 weeks. Monitor error rates, latency, and resource usage. If AGC is stable and ingress-nginx is no longer receiving traffic, begin decommission. Delete Ingress resources. Uninstall the ingress-nginx Helm release. Delete the LoadBalancer service. Update DNS records to point exclusively to the AGC frontend IP. Keep the ingress-nginx YAML in git history for rollback.
+        </aside>
+    </section>
+</section>
+
+<!-- SECTION 5: TRY IT -->
+<section>
+    <section>
+        <h2>Try it</h2>
+        <aside class="notes">
+            This repository is open source and ready for testing. Start with the quickstart, run the validation scripts, and report issues. Contributions are welcome, especially for annotation translation edge cases and ALZ Corp topology variants.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Quickstart</h3>
+        <pre><code class="bash"># Clone the repo
+git clone https://github.com/martinopedal/aks-automatic-ingress-migration.git
+cd aks-automatic-ingress-migration
+
+# Terraform example (ALZ Corp spoke VNet with AGC)
+cd terraform/examples/alz-corp-spoke
+terraform init
+terraform plan
+
+# Bicep example (same)
+cd bicep/examples/alz-corp-spoke
+az deployment group create --template-file main.bicep --parameters main.parameters.json
+
+# Run ingress2gateway
+kubectl get ingress --all-namespaces -o yaml > ingress-backup.yaml
+ingress2gateway ingress-backup.yaml -o gateway-manifests/</code></pre>
+        <aside class="notes">
+            The quickstart examples provision a spoke VNet with AGC, a managed identity with Workload Identity federation, and a Gateway with an internal frontend. They do not provision the hub VNet or Azure Firewall (assumes you have an existing ALZ Corp foundation). Run terraform plan or az deployment group what-if to preview changes. Do not deploy to production until you have reviewed the runbook and completed Phase 00.
+        </aside>
+    </section>
+
+    <section>
+        <h3>Contribute</h3>
+        <ul>
+            <li>Report issues: annotation gaps, breaking changes, IaC bugs</li>
+            <li>Submit PRs: runbook improvements, validation scripts, Helm chart updates</li>
+            <li>Review ADRs: positioned as orchestration layer, not translator</li>
+            <li>Label issues with <code>squad</code> for triage</li>
+        </ul>
+        <p class="citation">
+            Repo: <a href="https://github.com/martinopedal/aks-automatic-ingress-migration">martinopedal/aks-automatic-ingress-migration</a>
+        </p>
+        <aside class="notes">
+            This project is community-driven. If you find an annotation that ingress2gateway does not translate, open an issue with a minimal example. If you write a validation script or improve the runbook, submit a PR. All PRs require one reviewer and clean CI. Label issues with squad for triage by the lead. Read ADR-001 before proposing major scope changes; this repo is an orchestration layer, not a replacement for ingress2gateway.
+        </aside>
+    </section>
+
+    <section>
+        <h2>Closing</h2>
+        <ul>
+            <li>March 2026: ingress-nginx retires</li>
+            <li>November 2026: App Routing drops to critical-only</li>
+            <li>AGC + Gateway API is the path forward</li>
+            <li>Start planning now: 3-6 months for ALZ Corp</li>
+        </ul>
+        <p>Questions?</p>
+        <aside class="notes">
+            You have 18 months (as of this deck creation) to migrate off ingress-nginx. AGC private cluster support is the gate. Start inventory and planning now. Run the translation tool. Test in staging. Document your risks. Align with your security and networking teams. Do not wait until November 2025. By then, you will be late.
+        </aside>
+    </section>
+</section>
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            transition: 'slide',
+            plugins: [ RevealNotes ]
+        });
+    </script>
+</body>
+</html>
