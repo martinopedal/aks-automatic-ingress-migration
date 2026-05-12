@@ -107,6 +107,10 @@ az network alb frontend list -g <rg> --alb-name <agc> > agc-frontends.json
 
 Attach to incident.
 
+## Rollback
+
+Phase 09 is the rollback procedure itself. There is no rollback for the rollback. If a rollback step fails midway, use `Version capture` (below) to document the state and escalate to Microsoft support with the snapshot evidence. Freeze the cluster state and wait for support guidance before proceeding.
+
 ## References
 
 - [Helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) (accessed 2026-04-22)
