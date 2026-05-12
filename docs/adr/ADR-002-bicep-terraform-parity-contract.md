@@ -18,7 +18,7 @@ This repository has no value if customers must maintain parallel implementations
 
 **We enforce output schema equivalence, not source equivalence.**
 
-### What Parity Means
+### What parity means
 
 Parity is defined at the module output boundary. For every Terraform module under `terraform/`, there must exist a Bicep module under `bicep/` with the same logical scope (e.g., `terraform/modules/agc` and `bicep/modules/agc`). Both modules must expose outputs with identical:
 
@@ -34,7 +34,7 @@ Source equivalence is NOT required. Bicep and Terraform have different idioms:
 
 Each stack should follow its language's best practices. We test outputs, not source.
 
-### What We Test
+### What we test
 
 Every module directory under `terraform/` and `bicep/` must include an `outputs.schema.json` file that declares the expected output keys, types, and descriptions. Example:
 
@@ -67,7 +67,7 @@ CI validates:
 
 We do NOT execute `terraform apply` or `az deployment group create` in CI for parity tests. We rely on `terraform output -json` against a `.tfstate` fixture and `az deployment group what-if --result-format FullResourcePayloads` or pre-validated output manifests. For modules without live deployments, contributors manually validate and document outputs in `outputs.schema.json`.
 
-### The CI Gate
+### The CI gate
 
 A GitHub Actions workflow `.github/workflows/parity-check.yml` runs on every PR that touches `terraform/`, `bicep/`, or `outputs.schema.json` files. Steps:
 
@@ -99,7 +99,7 @@ This workflow runs before any manual review. PRs cannot merge without a passing 
 - **Not every file requires parity.** Terraform-specific tooling (e.g., `terraform fmt`, `tflint` configs) and Bicep-specific tooling (e.g., `bicepconfig.json`) live in their respective directories without equivalents. Only modules with outputs are subject to parity.
 - **Escape hatch exists.** If a feature is only available in one stack, we document the gap in `.squad/decisions.md` with a "deferred parity" decision and a target date for resolution. This unblocks time-sensitive features while preserving the long-term contract.
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Source-level parity
 

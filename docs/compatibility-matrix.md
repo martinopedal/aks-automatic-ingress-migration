@@ -1,4 +1,4 @@
-# Compatibility Matrix
+# Compatibility matrix
 
 **Owner:** Atlas (`squad:atlas`)  
 **Review cadence:** Quarterly  
@@ -22,7 +22,7 @@ This matrix tracks the validated version set for AKS Automatic migration work in
 |---|---|---|---|---|---|
 | 2026-Q2 | Track from AKS supported versions and release tracker | Track from Microsoft ALB Controller release notes | v1 CRD track, verify against gateway-api releases and ALB Controller notes | v1.0.0 baseline | Initial matrix baseline for this repo |
 
-## Refresh Procedure
+## Refresh procedure
 
 1. Check all sources in this file.
 2. Update the matrix row for the current quarter.

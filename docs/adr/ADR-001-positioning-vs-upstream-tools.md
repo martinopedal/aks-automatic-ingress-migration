@@ -43,7 +43,7 @@ We remain focused on the orchestration layer that upstream tools do not cover. I
 ### Positive
 
 - **Clear scope.** No confusion about our role. We orchestrate, not translate.
-- **No duplicate effort.** We leverage upstream translation logic (`ingress2gateway` v1.0 GA is stable and feature-complete).
+- **No duplicate effort.** We consume upstream translation logic (`ingress2gateway` v1.0 GA is stable and feature-complete).
 - **Tight integration.** We can wrap `ingress2gateway` in PowerShell or Terraform provisioner blocks and feed output directly to `kubectl apply` or Helm workflows.
 - **Maintenance reduced.** Translation logic is owned by Kubernetes SIG Network. We only maintain runbook, IaC, and examples.
 
@@ -56,7 +56,7 @@ We remain focused on the orchestration layer that upstream tools do not cover. I
 
 - **Two upstream tools exist.** Users may ask which one to use. Answer: `ingress2gateway` for Kubernetes-native workflows, Azure's migration utility for AGIC-to-AGC migrations. Our runbook supports both, favoring `ingress2gateway` for its vendor-neutral design.
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Build a competing translator
 

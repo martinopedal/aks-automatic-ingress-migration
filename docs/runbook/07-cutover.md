@@ -1,4 +1,4 @@
-# Phase 07 — Production cutover
+# Phase 07, production cutover
 
 ## Goal
 

@@ -74,8 +74,6 @@ Citations are inline with `<p class="citation">` elements. All retirement dates 
 
 ## Style
 
-- **No em dashes.** Use periods or commas.
-- **Citation rigor.** Every claim about retirement dates, default behavior, or preview status includes a source URL.
-- **Concise speaker notes.** Direct prose, no marketing voice.
+No em dashes. Use commas or periods. Every claim about retirement dates, default behavior, or preview status links to MS Learn or upstream GitHub. Speaker notes are direct prose, not marketing copy.
 
-Follows project conventions from `.github/copilot-instructions.md` and `.squad/agents/sage/charter.md`.
+Follows project conventions in `.github/copilot-instructions.md` and `.squad/skills/voice-profile/SKILL.md`.

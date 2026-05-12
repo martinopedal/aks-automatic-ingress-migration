@@ -68,9 +68,9 @@ This ADR does not mandate creating the full content of `docs/runbook/00-prereq-a
 
 ### Neutral
 
-- **Creates a forcing function for GA.** If Microsoft sees customers blocked by the prerequisite check, it may accelerate private cluster GA. Conversely, if preview is working well, customers may accept the risk. Either outcome is information.
+- **Creates a forcing function for GA.** If Microsoft sees customers blocked by the prerequisite check, that pressure may pull private cluster GA forward. If preview is working well, customers may accept the risk. Either outcome is information.
 
-## Alternatives Considered
+## Alternatives considered
 
 ### Hide the limitation behind a warning
 

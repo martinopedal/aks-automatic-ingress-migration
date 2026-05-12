@@ -1,4 +1,4 @@
-# Phase 06 — Shadow traffic and observation
+# Phase 06, shadow traffic and observation
 
 ## Goal
 

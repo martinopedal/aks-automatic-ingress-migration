@@ -1,4 +1,4 @@
-# Phase 08 — Decommission ingress-nginx and the App Routing addon
+# Phase 08, decommission ingress-nginx and the App Routing addon
 
 ## Goal
 

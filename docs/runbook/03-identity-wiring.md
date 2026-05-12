@@ -1,4 +1,4 @@
-# Phase 03 — Identity wiring
+# Phase 03, identity wiring
 
 ## Goal
 
