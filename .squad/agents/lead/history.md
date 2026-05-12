@@ -206,3 +206,11 @@ PR #61 was a no-op on ADR-004 because the parallel-spawned wave 2 agents ran in 
 
 **Lesson logged:** Background `task` agents share the cwd; parallel write-mode spawns require `git worktree add` per agent or sequential execution. Wave 3 ran sequentially.
 
+### 2026-05-13: Wave 4 ADR-004 Accepted, AKS Automatic add-on path documented
+
+PR #67 pivoted ADR-004 from Proposed to Accepted with a more nuanced posture than my wave 2 draft proposed. The new posture: document the AGC ALB Controller AKS add-on path as first-class for AKS Automatic users, but do NOT ship Terraform or Bicep IaC for it.
+
+Reasoning grounded in the AGC FAQ finding from wave 3: AKS Automatic + AGC requires the add-on (Helm install unsupported on Automatic). Without documenting the add-on path, the toolkit cannot serve its declared audience (AKS Automatic users planning migration). At the same time, shipping IaC for a preview feature whose add-on auto-creates identity in `MC_*` would break the ADR-002 parity contract.
+
+The middle path serves both audiences: standard AKS users keep the full Helm IaC path; AKS Automatic users get a documented, citation-grounded enablement sequence in `docs/aks-automatic-path.md` with all `az` commands quoted from the canonical [add-on quickstart](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon).
+
