@@ -48,5 +48,5 @@ As of 2026-04-22, AGC support for **private AKS clusters** is in preview in some
 
 ## References
 
-- [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview) — Microsoft Learn
+- [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview), Microsoft Learn
 - [ADR-003: AGC Private Cluster Preview Status Gate](./adr/ADR-003-agc-private-cluster-preview-gate.md)
