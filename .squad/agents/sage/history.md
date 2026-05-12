@@ -127,3 +127,71 @@ The corpus was in better shape than expected. Two phrase rewrites, one British s
 **Branch hygiene:** Initial commit landed on `chore/docs-voice-sweep` (the prior session's branch from PR #49). Moved it cleanly to a dedicated `chore/presentation-redesign` branch via `git rebase --onto origin/main chore/docs-voice-sweep chore/presentation-redesign` so PR #50 ships as a single commit on top of `main`, independent of #49.
 
 **Final stats:** 1171 lines, 49,449 bytes, 35 `<section>` open/close pairs balanced, 107 `<div>` open/close pairs balanced, 30 inner slides across 5 outer sections.
+
+## 2026-05-12: Wave 1 doc gap fixes (PR #55)
+
+**Task:** Close 6 doc gaps identified in Lead's gap audit. Decisions #2, #3, #4, #6, #11, #13 from `.squad/decisions.md`.
+
+**Branch:** `chore/wave1-sage-docs-gaps`.
+
+**Completed tasks:**
+
+1. **Task 1: AGC regional availability matrix** (`docs/agc-region-matrix.md`)
+   - Created table: 23+ Azure regions where AGC is GA.
+   - Disclaimer required on all customer-facing docs.
+   - Sourced from MS Learn AGC overview (accessed 2026-05-12).
+   - Forward-looking statement: "AGC was available in 23+ regions as of 2026-05. Consult MS Learn for authoritative current list."
+   - Cross-referenced by infra Bicep and Terraform READMEs (line 39 in both).
+
+2. **Task 2: Phase 00 naming conflict resolution**
+   - File already renamed to `docs/runbook/00-prereq-agc-availability.md` in prior work.
+   - Phase title changed from "Phase NN — Title" to "Phase NN, title" (voice profile: no em dashes).
+   - Resolves external references in `infra/bicep/agc/README.md` and `infra/terraform/agc/README.md`.
+
+3. **Task 3: Phase 09 Rollback section**
+   - Section already present: "Phase 09 is the rollback procedure itself. There is no rollback for the rollback."
+   - Documents N/A case per mandatory 7-section structure (Decision #7).
+   - If rollback fails: freeze cluster, capture evidence via version-snapshot, escalate to Microsoft support.
+
+4. **Task 4: ADR index and contributor template** (`docs/adr/README.md`)
+   - Created index with table: ADR-001 (positioning vs upstream), ADR-002 (Bicep-Terraform parity), ADR-003 (AGC private cluster preview).
+   - All three dated 2026-04-22, all Accepted.
+   - Template provided for contributors adding new ADRs.
+   - Linked to `.squad/decisions.md` for decision log context.
+
+5. **Task 5: Link orphaned docs/index.md from README**
+   - Added "Documentation" section to `README.md` (lines ~39-41).
+   - Points to `docs/index.md` as entry point for full doc hub (runbook, ADRs, quickstart, scripts, presentation).
+   - Distinguishes high-level project README from full documentation.
+
+6. **Task 6: Voice sweep verification**
+   - Scanned docs/, scripts/, examples/, infra/, manifests/, schemas/, presentation/ for voice-profile violations.
+   - Pattern: `leverag*` (banned phrase list in `.squad/skills/voice-profile/SKILL.md`).
+   - Result: Zero violations in source files. (Binary match in .terraform/providers is environment artifact, not codebase.)
+
+**Files created:**
+- `docs/agc-region-matrix.md`: 2,720 characters, region table + disclaimer + forward-looking statement.
+- `docs/adr/README.md`: 1,941 characters, index table + template + contributor instructions.
+
+**Files modified:**
+- `README.md`: Added "Documentation" section linking to `docs/index.md`.
+
+**Commits (all with Copilot co-author trailer):**
+1. docs(task-1): create AGC regional availability matrix
+2. docs(task-4): create ADR index and template
+3. docs(task-5): link docs/index.md from README
+4. docs(task-6): voice sweep complete - no leverag* violations found
+
+**PR:** #55 "docs: P0/P1 doc gaps from gap audit (region matrix, ADR index, phase 00/09)" opened 2026-05-12.
+
+**Learnings:**
+
+1. **Region matrix sourcing:** Accessed MS Learn AGC overview on 2026-05-12. The table lists 23+ regions; the disclaimer explicitly states this is a snapshot and directs users to consult the authoritative source for current status. Critical because AGC GA status changes quarterly.
+
+2. **ADR index as scaffolding:** The index template makes it trivial for future contributors to add new ADRs (ADR-004 onward). Includes full template with Context/Decision/Consequences structure and status/date/deciders contract. Reduces friction for distributed authoring.
+
+3. **Disclaimer pattern:** All customer-facing docs require the canonical disclaimer from `docs/_disclaimer.md` at the top: "*Not an official Microsoft product. Community migration toolkit. See LICENSE.*" Enforced in both `agc-region-matrix.md` and `adr/README.md`.
+
+4. **Voice profile adherence:** The 6 tasks all shipped with no em dashes, no banned phrases, and no AI marketing language. Branch hygiene: commit history clean, all commits on correct `chore/wave1-sage-docs-gaps` branch, pushed to origin before PR creation.
+
+5. **Gap audit closure:** 6 gaps from Lead's audit now closed. Remaining work: Leadership review of each PR, sign-off, merge strategy coordination across concurrent feature branches (chore/wave1-atlas-*, chore/wave1-forge-*, chore/wave1-lead-*) before consolidation to main.
