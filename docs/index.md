@@ -4,9 +4,9 @@ Migration toolkit for AKS Automatic clusters moving from `ingress-nginx` and the
 
 ## Why
 
-- The community `ingress-nginx` project has announced retirement for **March 2026** ([kubernetes/ingress-nginx#10977](https://github.com/kubernetes/ingress-nginx/issues/10977), accessed 2026-04-22).
-- The Microsoft App Routing addon drops to critical-only patches in **November 2026** ([learn.microsoft.com/azure/aks/app-routing](https://learn.microsoft.com/azure/aks/app-routing), accessed 2026-04-22).
-- AKS Automatic ships ingress-nginx by default. Customers who do nothing will be on an unsupported controller.
+- The community `ingress-nginx` project enters maintenance mode in **March 2026**, per [Ingress NGINX retirement](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/).
+- The Microsoft App Routing add-on (managed NGINX) stops receiving Azure support in **November 2026**, per the caution callout in [App routing Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api): "the managed NGINX add-on... will stop receiving Azure support from Azure after November 2026."
+- AKS Automatic ships ingress-nginx by default, per [AKS Automatic overview](https://learn.microsoft.com/azure/aks/intro-aks-automatic). Customers who do nothing will be on an unsupported controller.
 
 ## How to use these docs
 
@@ -14,7 +14,7 @@ Start at the runbook overview. Each phase is independently runnable and ends wit
 
 | Path | What you get |
 |---|---|
-| [Architecture decisions](./adr/) | ADR-001 positioning, ADR-002 Bicep+Terraform parity contract, ADR-003 AGC private cluster preview gate |
+| [Architecture decisions](./adr/) | ADR-001 positioning, ADR-002 Bicep+Terraform parity contract, ADR-003 AGC private cluster preview gate, ADR-004 toolkit posture on preview features |
 | [Migration runbook](./runbook/00-prereq-agc-availability.md) | 10-phase end-to-end runbook from assessment to rollback |
 | [Quickstart sample](../examples/hello-world/README.md) | Smallest reproducible AGC + Gateway API + Workload Identity demo, ALZ Corp defaults |
 | [Migration helper scripts](../scripts/migration/README.md) | PowerShell cmdlets for assessment, conversion, and traffic cutover |

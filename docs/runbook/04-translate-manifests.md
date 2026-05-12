@@ -8,7 +8,7 @@ Generate `Gateway`, `HTTPRoute`, and supporting policy manifests from the existi
 
 - Phase 01 assessment complete (`assessment.json` on disk).
 - Phase 02 AGC provisioned, controller healthy with identity.
-- `ingress2gateway >= 0.3.0` on PATH.
+- `ingress2gateway >= v1.0.0` ([v1.1.0 latest, April 2026](https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.1.0)) on PATH.
 - A `gateways/` working directory.
 
 ## Steps
