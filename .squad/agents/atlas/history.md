@@ -32,3 +32,25 @@ Activity log for Atlas (Kubernetes manifests, Gateway API translation, Helm).
 - Speaker notes carry depth. Slides carry punch.
 
 **Next session:** Atlas renders deck locally, inspects at least three slides visually before declaring done. Coordinate with Sage on shared docs/presentation scope.
+
+### 2026-05-12: Quickstart example, compatibility matrix, manifests README
+
+**PR #56** merged. Addressed gaps #1, #8 (manifests half), #10.
+
+**Files created:**
+- `examples/quickstart/`: HTTP-only smoke test per decision #1. Terraform AGC module call (`infra/terraform/agc`), Gateway API v1 manifests (Gateway + HTTPRoute), Kustomize structure. Backend: `nginxinc/nginx-unprivileged:latest` on port 8080.
+- `examples/quickstart/infra/main.tf`: Module wrapper with defaults (`quickstart-agc` name, `azure-alb-external` gatewayClassName).
+- `examples/quickstart/manifests/`: namespace, deployment, service, gateway, httproute, kustomization.yaml.
+- `docs/compatibility-matrix.md`: Populated with component versions and cited sources (AKS Automatic 1.30+, Gateway API v1 GA from v1.0.0 (2024-10-30), AGC ALB Controller latest stable, ingress2gateway v1.0.0+ from 2026-03-20 release, ingress-nginx reference only).
+- `manifests/README.md`: Top-level navigation for manifests/, links to `ingress-to-gateway/` catalog and `docs/runbook/04-translate-manifests.md`.
+
+**Decisions made:**
+- gatewayClassName: `azure-alb-external` (public frontend) for quickstart smoke test. `azure-alb-internal` is ALZ Corp default per `examples/hello-world/`.
+- Validation strategy: Terraform `init + validate` passed locally. Manifest validation deferred to CI kubeconform (no live cluster available locally, kubectl --dry-run=client requires API server for CRD schemas).
+- ingress2gateway version reference: v1.0.0 baseline per Kubernetes blog (2026-03-20). Actual release tag link: <https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.0.0>.
+
+**Learnings:**
+- The AGC module (`infra/terraform/agc`) requires `name`, `resource_group_name`, `subnet_id` (delegated to `Microsoft.ServiceNetworking/trafficControllers`), optional `location` and `tags`.
+- Gateway API v1 CRDs promoted to GA in Gateway API v1.0.0 release (2024-10-30). AKS Automatic 1.30+ recommended for stable support (Kubernetes 1.29 promoted Gateway/HTTPRoute to v1).
+- CI manifest validation uses kubeconform with `--ignore-missing-schemas` (`.github/workflows/validate.yml`). This avoids blocking on AGC-specific CRDs not in kubeconform's built-in schema registry.
+- kubectl --dry-run=client without a live cluster falls back to syntax-only validation (no API server OpenAPI schema fetch).
