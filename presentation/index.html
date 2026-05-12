@@ -497,10 +497,10 @@ html, body { background: var(--bg); }
       </div>
     </div>
     <p class="citation">
-      <a href="https://github.com/kubernetes/ingress-nginx/issues/10977">kubernetes/ingress-nginx#10977</a>
-      &middot; <a href="https://learn.microsoft.com/azure/aks/app-routing">MS Docs: App Routing addon</a>
+      <a href="https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/">kubernetes.dev: Ingress NGINX retirement (Mar 2026)</a>
+      &middot; <a href="https://learn.microsoft.com/azure/aks/app-routing-gateway-api">MS Docs: App routing Gateway API (Nov 2026 callout)</a>
     </p>
-    <aside class="notes">The community ingress-nginx project announced retirement for March 2026. Microsoft's App Routing addon, which wraps ingress-nginx, will stop receiving feature updates and drop to critical-only patches in November 2026. After that date, no bug fixes, no security patches except critical CVEs. Staying on ingress-nginx past Nov 2026 is operational risk you cannot offset with budget.</aside>
+    <aside class="notes">The community ingress-nginx project enters maintenance mode in March 2026 per the kubernetes.dev retirement blog. Microsoft's App Routing add-on, which wraps managed NGINX, stops receiving Azure support after November 2026 per the caution callout on the App routing Gateway API page. Staying on managed NGINX past November 2026 is operational risk you cannot offset with budget.</aside>
   </section>
 
   <section>
@@ -508,8 +508,8 @@ html, body { background: var(--bg); }
     <div class="cols left-heavy">
       <div class="col">
         <ul>
-          <li>AGC private cluster support is still <span class="preview">Preview</span>. Hard prerequisite for ALZ Corp.</li>
-          <li>ingress2gateway v1.0 GA is the translator. It does not handle every annotation.</li>
+          <li>AKS Automatic + AGC requires the AKS add-on (preview); Helm install is unsupported on Automatic per <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/faq">AGC FAQ</a>.</li>
+          <li>ingress2gateway v1.1.0 (latest, April 2026) is the translator. It does not handle every annotation.</li>
           <li>ALZ Corp topology needs private cluster API, delegated subnets, Workload Identity wiring.</li>
           <li>SRE teams need lead time on the Gateway API mental model and Helm chart layout.</li>
         </ul>
@@ -522,7 +522,7 @@ html, body { background: var(--bg); }
         </div>
       </div>
     </div>
-    <aside class="notes">ALZ Corp environments need hub-spoke topology, Azure Firewall egress, private cluster APIs, and Workload Identity. AGC private cluster support remained in preview as of April 22 2026 with no published GA date. You need time to validate the full stack, run failover scenarios, and train the SRE team on Gateway API.</aside>
+    <aside class="notes">ALZ Corp environments need hub-spoke topology, Azure Firewall egress, private cluster APIs, and Workload Identity. AKS Automatic clusters can only adopt AGC via the AKS add-on, which is in preview as of May 2026 per Microsoft documentation. You need time to validate the full stack, run failover scenarios, and train the SRE team on Gateway API.</aside>
   </section>
 
   <section>
@@ -530,7 +530,7 @@ html, body { background: var(--bg); }
     <div class="grid-2x2">
       <div class="card">
         <h4>Gateway API v1</h4>
-        <p>Kubernetes SIG Network standard, vendor-neutral, GA October 2023.</p>
+        <p>Kubernetes SIG Network standard, vendor-neutral. v1.0.0 tagged 31 October 2023.</p>
       </div>
       <div class="card">
         <h4>Application Gateway for Containers</h4>
@@ -541,15 +541,15 @@ html, body { background: var(--bg); }
         <p>Opinionated cluster profile. Managed addons, Karpenter, deletion locks.</p>
       </div>
       <div class="card">
-        <h4>ingress2gateway v1.0</h4>
-        <p>Official translator from kubernetes-sigs. Run, then review the diff.</p>
+        <h4>ingress2gateway v1.1</h4>
+        <p>Official translator from kubernetes-sigs (v1.0 GA Mar 2026, v1.1 Apr 2026). Run, then review the diff.</p>
       </div>
     </div>
     <p class="citation">
       <a href="https://gateway-api.sigs.k8s.io/">Gateway API spec</a>
       &middot; <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/overview">MS Docs: AGC overview</a>
     </p>
-    <aside class="notes">Gateway API is the SIG Network standard for ingress and service mesh routing, vendor-neutral, GA since October 2023. AGC is Microsoft's managed ingress controller that implements it. AKS Automatic is the opinionated cluster profile, but you can run AGC on standard AKS too. ingress2gateway is the official translator, version 1.0 GA.</aside>
+    <aside class="notes">Gateway API is the SIG Network standard for ingress and service mesh routing, vendor-neutral. v1.0.0 was tagged 31 October 2023 per the GitHub releases. AGC is Microsoft's managed ingress controller that implements it. AKS Automatic is the opinionated cluster profile, but you can run AGC on standard AKS too. ingress2gateway is the official translator: v1.0.0 GA in March 2026, v1.1.0 in April 2026.</aside>
   </section>
 
   <section>
@@ -560,7 +560,7 @@ html, body { background: var(--bg); }
           <li>10-phase runbook tuned for ALZ Corp environments</li>
           <li>Terraform and Bicep modules with enforced output parity</li>
           <li>Helm chart for the AGC controller and Gateway API CRDs</li>
-          <li>Translation guidance built on ingress2gateway v1.0 GA</li>
+          <li>Translation guidance built on ingress2gateway v1.1 (latest, April 2026)</li>
           <li>PowerShell scripts for assessment and dry-run cutover</li>
         </ul>
       </div>
@@ -872,20 +872,20 @@ subject: |
   </section>
 
   <section>
-    <h3>Private cluster AGC is still preview.</h3>
+    <h3>AKS Automatic + AGC requires the preview AKS add-on.</h3>
     <div class="callout">
-      <div class="ribbon">Preview, verified 22 April 2026</div>
-      <p>AGC private cluster support has no published GA date. ALZ Corp requires a private cluster API. This is the gating prerequisite in Phase 00 of the runbook.</p>
+      <div class="ribbon">Preview, verified May 2026</div>
+      <p>Per the <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/faq">AGC FAQ</a>, Helm-installed ALB Controller is unsupported on AKS Automatic. The only supported path is the AGC ALB Controller AKS add-on, which is in preview and requires feature flags <code>ManagedGatewayAPIPreview</code> and <code>ApplicationLoadBalancerPreview</code>.</p>
     </div>
     <ul>
-      <li>If you cannot wait for GA, you accept preview SLA terms</li>
-      <li>Document the risk in your CAB submission</li>
-      <li>Track the Microsoft public roadmap for status changes</li>
+      <li>If you cannot accept preview SLA terms, use standard AKS (not Automatic) with the GA Helm path.</li>
+      <li>Document the preview risk in your CAB submission per ADR-004.</li>
+      <li>Track Azure Updates for GA announcements: <a href="https://azure.microsoft.com/updates/">azure.microsoft.com/updates</a></li>
     </ul>
     <p class="citation">
-      <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/private-cluster-support">MS Docs: AGC private cluster support (preview)</a> &middot; ADR-003
+      <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon">MS Docs: AGC ALB Controller AKS add-on (preview)</a> &middot; ADR-003 &middot; ADR-004
     </p>
-    <aside class="notes">This is the biggest blocker. ALZ Corp requires private cluster API servers. AGC private cluster support was announced in preview, but as of April 22 2026 it has not reached GA. Microsoft has not published a date. If you cannot wait, accept preview SLA terms (no production support guarantee, breaking changes possible) and document the risk for change advisory.</aside>
+    <aside class="notes">This is the AKS Automatic gating constraint. Per the AGC FAQ, Helm install of the ALB Controller is unsupported on Automatic clusters. The supported path is the AKS managed add-on, which is preview and requires preview feature flags. If you cannot accept preview SLA terms, your alternative is to use standard AKS instead of Automatic, where the GA Helm path is available. Document the preview risk for change advisory.</aside>
   </section>
 
   <section>
@@ -954,22 +954,22 @@ output frontend_id string = frontend.id
         <p class="note">Plan 3 to 6 months end to end for production ALZ Corp. Coexist for at least 2 weeks before cutover, longer if traffic is heavy.</p>
       </div>
     </div>
-    <aside class="notes">Phase 00 is the longest because it depends on Microsoft GA dates. Phases 02 to 04 are network and identity (mostly IaC). Phase 05 is translation and manual annotation review. Phases 07 to 08 are traffic cutover with rollback. Phase 09 is cleanup. 3 to 6 months is realistic for production ALZ Corp.</aside>
+    <aside class="notes">Phase 00 is the longest because it depends on Microsoft GA dates and AKS Automatic preview gates. Phases 02 to 04 are network and identity (mostly IaC). Phase 05 is translation and manual annotation review. Phases 07 to 08 are traffic cutover with rollback. Phase 09 is cleanup. 3 to 6 months is realistic for production ALZ Corp.</aside>
   </section>
 
   <section>
     <h3>Phase 00, do not start without these.</h3>
     <div class="callout">
       <div class="ribbon">Blocker</div>
-      <p>AGC private cluster support reaches GA, or you sign off on the preview risk in writing.</p>
+      <p>For AKS Automatic, accept preview SLA on the AGC AKS add-on (per <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/faq">AGC FAQ</a>) or use standard AKS with the GA Helm path.</p>
     </div>
     <ul>
-      <li>AKS cluster on Kubernetes 1.27 or later</li>
+      <li>AKS cluster on a <a href="https://learn.microsoft.com/azure/aks/supported-kubernetes-versions">supported Kubernetes version</a></li>
       <li>Gateway API CRDs v1 installed, not v1beta1</li>
       <li>Hub-spoke VNets peered, NSGs aligned</li>
       <li>Azure Firewall UDR present on the AKS subnet</li>
     </ul>
-    <aside class="notes">Do not proceed until AGC private cluster support is GA, or you have signed off on the preview risk. Verify the AKS cluster is on Kubernetes 1.27+. Install Gateway API CRDs v1 (not v1beta1). Confirm hub-spoke peering and the firewall UDR. If any are missing, pause and fix before Phase 01.</aside>
+    <aside class="notes">For AKS Automatic, the AGC ALB Controller is only supported via the AKS managed add-on, which is in preview. Decide upfront: accept preview SLA on Automatic, or move to standard AKS where Helm install is GA. Verify the AKS cluster is on a supported Kubernetes version. Install Gateway API CRDs v1 (not v1beta1). Confirm hub-spoke peering and the firewall UDR. If any are missing, pause and fix before Phase 01.</aside>
   </section>
 
   <section>
@@ -1124,9 +1124,9 @@ ingress2gateway translate \
           <div class="label">ALZ Corp migration</div>
         </div>
       </div>
-      <p class="lede" style="margin-top: 36px;">Inventory this week. Plan the network changes. Run ingress2gateway. By the time AGC private cluster goes GA, you want to be ready to apply, not start.</p>
+      <p class="lede" style="margin-top: 36px;">Inventory this week. Plan the network changes. Run ingress2gateway. By the time AGC reaches add-on GA on AKS Automatic, you want to be ready to apply, not start.</p>
     </div>
-    <aside class="notes">As of this deck creation you have 18 months. AGC private cluster support is the gate. Start inventory and planning now. Run the translation tool. Test in staging. Document the risks. Align with security and networking. Don't wait until November 2025 or you will be late.</aside>
+    <aside class="notes">As of this deck creation you have 18 months. The AKS Automatic + AGC add-on is the gate. Start inventory and planning now. Run the translation tool. Test in staging. Document the risks. Align with security and networking. Don't wait until November 2026 or you will be late.</aside>
   </section>
 
 </section>

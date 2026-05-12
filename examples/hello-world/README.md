@@ -1,10 +1,12 @@
 # hello-world sample, ALZ Corp defaults
 
-This sample shows the minimum path for an AKS Automatic workload on Gateway API and Application Gateway for Containers, aligned to ALZ Corp defaults.
+This sample shows the minimum path for a **standard AKS** workload on Gateway API and Application Gateway for Containers, aligned to ALZ Corp defaults.
 
 - Workload Identity is enabled on the application ServiceAccount.
 - The Gateway uses `azure-alb-internal` to avoid a public frontend IP.
 - The cluster model is private API with hub egress via Azure Firewall.
+
+> **AKS Automatic note:** This sample installs the ALB Controller via Helm into `azure-alb-system`. Per the [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) (accessed 2026-05-13): "Helm deployments of the ALB Controller aren't supported with AKS Automatic." AKS Automatic users must instead enable the [AGC ALB Controller AKS add-on (preview)](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) and skip step 2 below; see [`docs/preview-features.md`](../../docs/preview-features.md) and [ADR-004](../../docs/adr/ADR-004-toolkit-posture-on-preview-features.md) for the trade-offs.
 
 ## Directory layout
 
@@ -40,8 +42,8 @@ Complete these tasks before you apply the sample manifests:
 2. Install the ALB Controller in `azure-alb-system` and configure Workload Identity federation for `system:serviceaccount:azure-alb-system:alb-controller-sa` to the AGC managed identity client ID.
 3. Confirm the controller is healthy: `kubectl get pods -n azure-alb-system`.
 
-- https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-create-application-gateway-for-containers-managed-by-alb-controller
-- https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview
+- https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-create-application-gateway-for-containers-managed-by-alb-controller
+- https://learn.microsoft.com/azure/aks/workload-identity-overview
 
 Update `manifests/serviceaccount.yaml` with the actual managed identity client ID before applying resources.
 
@@ -84,7 +86,8 @@ hello from AGC
 
 ## References
 
-- https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/aks/landing-zone-accelerator
-- https://learn.microsoft.com/en-us/azure/aks/private-clusters
-- https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview
+- https://learn.microsoft.com/azure/cloud-adoption-framework/scenarios/app-platform/aks/landing-zone-accelerator
+- https://learn.microsoft.com/azure/aks/private-clusters
+- https://learn.microsoft.com/azure/application-gateway/for-containers/overview
+- https://learn.microsoft.com/azure/application-gateway/for-containers/faq
 - https://gateway-api.sigs.k8s.io/
