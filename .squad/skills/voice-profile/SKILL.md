@@ -83,7 +83,7 @@ Bad: "Make sure to plan your Kubernetes networking properly."
 - Headings sentence-case where the rendering allows it. Avoid title-case for body headings.
 - Code blocks have language tags so renderers can highlight them.
 - Citations to external docs go inline near the claim, not parked in a "References" section that nobody scrolls to. A trailing "References" section is fine if the body also names the source where it matters.
-- Every factual claim about retirement dates, default behaviour, or version-specific behaviour must link to a primary source (Microsoft Learn, upstream GitHub release, RFC).
+- Every factual claim about retirement dates, default behaviour, version-specific behaviour, region lists, supported feature flags, or SLAs links inline (not in a trailing References section) to a primary source: learn.microsoft.com URL or upstream GitHub release page. Lists copied from a source must match the source exactly. If a claim cannot be cited from public material, do not make it.
 
 ## Norwegian rules (when applicable)
 

@@ -1,6 +1,6 @@
 # Terraform and provider version constraints for AGC module
-# API version: Microsoft.ServiceNetworking/trafficControllers@2023-11-01 (GA stable)
-# Reference: https://learn.microsoft.com/en-us/azure/templates/microsoft.servicenetworking/trafficcontrollers
+# API version: Microsoft.ServiceNetworking/trafficControllers@2025-01-01 (GA stable)
+# Source: https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/2025-01-01/trafficcontrollers
 
 terraform {
   required_version = ">= 1.9.0"

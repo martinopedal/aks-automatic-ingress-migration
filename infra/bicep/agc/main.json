@@ -1,0 +1,116 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "12163675101327493253"
+    }
+  },
+  "parameters": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "metadata": {
+        "description": "Name of the Application Gateway for Containers (trafficController). Must match pattern ^[A-Za-z0-9]([A-Za-z0-9-_.]{0,62}[A-Za-z0-9])?$"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for AGC resources. Must be one of the 23 AGC-supported regions. See docs/agc-region-matrix.md"
+      }
+    },
+    "subnetId": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Azure resource ID of the subnet delegated to Microsoft.ServiceNetworking/trafficControllers. Caller must pre-create subnet with delegation."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to apply to AGC resources"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ServiceNetworking/trafficControllers",
+      "apiVersion": "2025-01-01",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.ServiceNetworking/trafficControllers/frontends",
+      "apiVersion": "2025-01-01",
+      "name": "[format('{0}/{1}', parameters('name'), format('{0}-frontend', parameters('name')))]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceNetworking/trafficControllers', parameters('name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ServiceNetworking/trafficControllers/associations",
+      "apiVersion": "2025-01-01",
+      "name": "[format('{0}/{1}', parameters('name'), format('{0}-association', parameters('name')))]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "associationType": "subnets",
+        "subnet": {
+          "id": "[parameters('subnetId')]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceNetworking/trafficControllers', parameters('name'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "alb_id": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure resource ID of the Application Gateway for Containers (trafficController)"
+      },
+      "value": "[resourceId('Microsoft.ServiceNetworking/trafficControllers', parameters('name'))]"
+    },
+    "alb_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Application Gateway for Containers resource"
+      },
+      "value": "[parameters('name')]"
+    },
+    "frontend_id": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure resource ID of the AGC frontend"
+      },
+      "value": "[resourceId('Microsoft.ServiceNetworking/trafficControllers/frontends', parameters('name'), format('{0}-frontend', parameters('name')))]"
+    },
+    "frontend_fqdn": {
+      "type": "string",
+      "metadata": {
+        "description": "Fully qualified domain name of the AGC frontend"
+      },
+      "value": "[reference(resourceId('Microsoft.ServiceNetworking/trafficControllers/frontends', parameters('name'), format('{0}-frontend', parameters('name'))), '2025-01-01').fqdn]"
+    },
+    "association_id": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure resource ID of the subnet association to the trafficController"
+      },
+      "value": "[resourceId('Microsoft.ServiceNetworking/trafficControllers/associations', parameters('name'), format('{0}-association', parameters('name')))]"
+    }
+  }
+}

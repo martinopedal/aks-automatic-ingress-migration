@@ -6,11 +6,14 @@
 
 This directory contains architecture decision records (ADRs) for the aks-automatic-ingress-migration project. Each ADR documents a significant architectural decision, the reasoning behind it, and the consequences.
 
+This index includes both Accepted ADRs (active decisions) and Proposed ADRs (awaiting user decision).
+
 | ADR | Status | Date | Title |
 |-----|--------|------|-------|
 | [001](./ADR-001-positioning-vs-upstream-tools.md) | Accepted | 2026-04-22 | Positioning vs upstream tools |
 | [002](./ADR-002-bicep-terraform-parity-contract.md) | Accepted | 2026-04-22 | Bicep and Terraform parity contract |
 | [003](./ADR-003-agc-private-cluster-preview-gate.md) | Accepted | 2026-04-22 | AGC private cluster preview status gate |
+| [004](./ADR-004-toolkit-posture-on-preview-features.md) | Proposed | 2026-05-13 | Toolkit posture on preview features |
 
 ## How to add an ADR
 

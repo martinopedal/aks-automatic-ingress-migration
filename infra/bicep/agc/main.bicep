@@ -1,6 +1,6 @@
 // Application Gateway for Containers base resources (Bicep)
-// API version: Microsoft.ServiceNetworking/trafficControllers@2023-11-01 (GA stable)
-// Reference: https://learn.microsoft.com/en-us/azure/templates/microsoft.servicenetworking/trafficcontrollers
+// API version: Microsoft.ServiceNetworking/trafficControllers@2025-01-01 (GA stable)
+// Source: https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/2025-01-01/trafficcontrollers
 //
 // Prerequisites:
 // - Subnet with delegation to Microsoft.ServiceNetworking/trafficControllers (passed via subnetId)
@@ -25,7 +25,7 @@ param subnetId string
 param tags object = {}
 
 // Application Gateway for Containers (trafficController)
-resource alb 'Microsoft.ServiceNetworking/trafficControllers@2023-11-01' = {
+resource alb 'Microsoft.ServiceNetworking/trafficControllers@2025-01-01' = {
   name: name
   location: location
   tags: tags
@@ -33,7 +33,7 @@ resource alb 'Microsoft.ServiceNetworking/trafficControllers@2023-11-01' = {
 }
 
 // Frontend for the trafficController
-resource frontend 'Microsoft.ServiceNetworking/trafficControllers/frontends@2023-11-01' = {
+resource frontend 'Microsoft.ServiceNetworking/trafficControllers/frontends@2025-01-01' = {
   parent: alb
   name: '${name}-frontend'
   location: location
@@ -42,7 +42,7 @@ resource frontend 'Microsoft.ServiceNetworking/trafficControllers/frontends@2023
 }
 
 // Association between trafficController and delegated subnet
-resource association 'Microsoft.ServiceNetworking/trafficControllers/associations@2023-11-01' = {
+resource association 'Microsoft.ServiceNetworking/trafficControllers/associations@2025-01-01' = {
   parent: alb
   name: '${name}-association'
   location: location
