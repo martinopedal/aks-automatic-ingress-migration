@@ -69,7 +69,7 @@ See `infra/agc/outputs.schema.json` for the parity contract. This module exposes
 
 ## API Version
 
-Uses `Microsoft.ServiceNetworking/trafficControllers@2023-11-01` (GA stable). This is the latest stable API version as of 2026-04-22. Reference: https://learn.microsoft.com/en-us/azure/templates/microsoft.servicenetworking/trafficcontrollers
+Uses `Microsoft.ServiceNetworking/trafficControllers@2025-01-01` (GA stable). Source: https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/2025-01-01/trafficcontrollers (accessed 2026-05-12)
 
 ## ALZ Corp Constraints
 

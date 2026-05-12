@@ -31,6 +31,22 @@ The migration scripts philosophy (read-only-first, human-driven cutover) is cano
 
 ## Learnings
 
+### 2026-05-12: API Version Recency Check (trafficControllers)
+
+Verified and bumped `Microsoft.ServiceNetworking/trafficControllers` from `@2023-11-01` to `@2025-01-01` (latest GA stable) across 6 files in PR #TBD.
+
+**Key lesson:** API version recency matters. Before claiming "latest stable", verify by fetching the version-specific ARM template reference page, not just the unversioned index. MS Learn changelog confirmed 2025-01-01 was GA stable with no breaking changes from 2023-11-01.
+
+**Process:**
+1. Fetched https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/trafficcontrollers to confirm available versions
+2. Fetched version-specific pages for 2023-11-01 and 2025-01-01 to compare schemas
+3. Verified change log confirmed "No properties added, updated or removed" for 2025-01-01
+4. Confirmed our usage (`properties: {}` with no optional fields) was safe to bump
+5. Updated all 6 files to cite version-specific URLs (not unversioned pages)
+6. Ran `terraform validate` and `az bicep build` to confirm both stacks parse
+
+**Citation pattern:** Use version-specific URLs in code comments and docs: `https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/2025-01-01/trafficcontrollers (accessed 2026-05-12)`.
+
 ### 2026-04-22: Migration Plan Schema v1
 
 Published the migration plan schema v1 contract in PR #46. Key components:

@@ -1,6 +1,6 @@
 # Application Gateway for Containers base resources
-# Uses azapi provider for Microsoft.ServiceNetworking/trafficControllers (API 2023-11-01 GA)
-# Reference: https://learn.microsoft.com/en-us/azure/templates/microsoft.servicenetworking/trafficcontrollers
+# Uses azapi provider for Microsoft.ServiceNetworking/trafficControllers (API 2025-01-01 GA)
+# Source: https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/2025-01-01/trafficcontrollers
 #
 # Prerequisites:
 # - Subnet with delegation to Microsoft.ServiceNetworking/trafficControllers (passed via subnet_id)
@@ -33,7 +33,7 @@ check "location_resolved" {
 
 # Application Gateway for Containers (trafficController)
 resource "azapi_resource" "alb" {
-  type      = "Microsoft.ServiceNetworking/trafficControllers@2023-11-01"
+  type      = "Microsoft.ServiceNetworking/trafficControllers@2025-01-01"
   name      = var.name
   location  = local.location
   parent_id = data.azapi_resource.resource_group.id
@@ -47,7 +47,7 @@ resource "azapi_resource" "alb" {
 
 # Frontend for the trafficController
 resource "azapi_resource" "frontend" {
-  type      = "Microsoft.ServiceNetworking/trafficControllers/frontends@2023-11-01"
+  type      = "Microsoft.ServiceNetworking/trafficControllers/frontends@2025-01-01"
   name      = "${var.name}-frontend"
   location  = local.location
   parent_id = azapi_resource.alb.id
@@ -61,7 +61,7 @@ resource "azapi_resource" "frontend" {
 
 # Association between trafficController and delegated subnet
 resource "azapi_resource" "association" {
-  type      = "Microsoft.ServiceNetworking/trafficControllers/associations@2023-11-01"
+  type      = "Microsoft.ServiceNetworking/trafficControllers/associations@2025-01-01"
   name      = "${var.name}-association"
   location  = local.location
   parent_id = azapi_resource.alb.id

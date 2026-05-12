@@ -36,6 +36,12 @@ Pre-alpha. Backlog tracked as GitHub issues with the `squad` label.
 
 See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix is reviewed quarterly by Atlas.
 
+## Resources
+
+### Preview features
+
+Microsoft has shipped two preview features that change the migration story. See [`docs/preview-features.md`](docs/preview-features.md).
+
 ## Runbook security baseline
 
 - [Threat model, AGC migration path](docs/runbook/10-threat-model.md)

@@ -68,8 +68,8 @@ All modules follow ALZ Corp constraints:
 
 ## API Versions
 
-Terraform uses `azapi` provider with `Microsoft.ServiceNetworking/trafficControllers@2023-11-01` (GA stable).
+Terraform uses `azapi` provider with `Microsoft.ServiceNetworking/trafficControllers@2025-01-01` (GA stable).
 
-Bicep uses `Microsoft.ServiceNetworking/trafficControllers@2023-11-01` (GA stable).
+Bicep uses `Microsoft.ServiceNetworking/trafficControllers@2025-01-01` (GA stable).
 
-Reference: https://learn.microsoft.com/en-us/azure/templates/microsoft.servicenetworking/trafficcontrollers (accessed 2026-04-22)
+Source: https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/2025-01-01/trafficcontrollers (accessed 2026-05-12)

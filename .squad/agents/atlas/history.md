@@ -4,6 +4,24 @@ Activity log for Atlas (Kubernetes manifests, Gateway API translation, Helm).
 
 ## Learnings
 
+### 2026-05-12: Compatibility matrix audit and rewrite (PR #58)
+
+**Task:** Fix audit findings in `docs/compatibility-matrix.md` and cite ingress2gateway v1.1.0 and new preview tools.
+
+**Audit findings:**
+1. "Access date: 2026-05-12" duplicated in every row. Moved to single top-level metadata line.
+2. ingress2gateway v1.0.0 listed, but v1.1.0 (2026-04-29, latest stable) missing. Added with inline citations for both releases.
+3. Gateway API v1.0.0 release date listed as "2024-10-30" with no source. Verified via GitHub API and corrected to "2023-10-31T16:40:39Z" (published_at from https://api.github.com/repos/kubernetes-sigs/gateway-api/releases/tags/v1.0.0).
+4. App Routing Gateway API impl (preview) missing. Added with GatewayClass `approuting-istio`, requirements (aks-preview >= 19.0.0b24, Istio 1.28+ control plane) from https://learn.microsoft.com/azure/aks/app-routing-gateway-api.
+5. AGC ALB Controller AKS add-on (preview) missing. Added with prerequisites (Azure CNI + Workload Identity) from https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon.
+6. ingress-nginx legacy row had no retirement link. Added March 2026 maintenance end date from https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/.
+
+**Key learning:** Every external claim must be cited inline near the claim, not parked in a global "Sources" section. Access dates belong once at the top, not per row. Dates especially must be verified from primary sources (GitHub API for release timestamps, MS Learn for feature docs).
+
+**Validation:** All claims now traced to primary sources. No invented dates. Table reformatted with Status column for clarity (GA, Preview, EOL).
+
+**PR #58:** Opened with full citations in commit message and PR body per voice profile and decision #4 (officialness, citation policy).
+
 ### 2026-05-12: Presentation deck redesign deferred
 
 **Task:** Redesign reveal.js deck (`presentation/index.html`) per pptx skill design principles.
