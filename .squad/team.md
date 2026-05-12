@@ -18,6 +18,7 @@
 | Iris | Identity and RBAC Engineer | [charter](agents/iris/charter.md) | Active |
 | Sentinel | Security Reviewer | [charter](agents/sentinel/charter.md) | Active |
 | Sage | Research and Runbook Author | [charter](agents/sage/charter.md) | Active |
+| @copilot | GitHub Coding Agent (cloud, autonomous PRs) | n/a (uses AGENTS.md + ADRs as context) | Active. Manual assignment only. 🟢 small docs/IaC tasks, 🟡 multi-file refactors, 🔴 architecture decisions. |
 
 ## Project Context
 

@@ -1,0 +1,563 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/martinopedal/aks-automatic-ingress-migration/main/schemas/migration-plan/v1/schema.json",
+  "title": "Migration Plan Schema v1",
+  "description": "Versioned schema for AKS Automatic ingress-nginx to Gateway API + AGC migration plans. Consumed by mcp-server-azure-architect ingress-migration-plan skill and other cross-repo consumers. Breaking changes increment the schema version (v1 to v2).",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "source", "target", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "v1",
+      "description": "Schema version. v1 is the initial stable release. Breaking changes go to v2."
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "createdAt"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for this migration plan.",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "description": {
+          "type": "string",
+          "description": "Prose summary of what this plan migrates. May be displayed to users or logged."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when the plan was generated (RFC 3339 format)."
+        },
+        "author": {
+          "type": "string",
+          "description": "Optional. User or system that generated the plan (e.g., 'martin@example.com', 'ci-pipeline-bot')."
+        },
+        "targetCompletionDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Optional. Target date for completing the migration (YYYY-MM-DD)."
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["cluster", "ingressController"],
+      "additionalProperties": false,
+      "properties": {
+        "cluster": {
+          "type": "object",
+          "required": ["name", "kubernetesVersion"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "AKS cluster name."
+            },
+            "kubernetesVersion": {
+              "type": "string",
+              "description": "Kubernetes version (e.g., '1.29.4').",
+              "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+            },
+            "resourceGroup": {
+              "type": "string",
+              "description": "Azure resource group containing the AKS cluster."
+            },
+            "subscriptionId": {
+              "type": "string",
+              "description": "Azure subscription ID (GUID).",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "location": {
+              "type": "string",
+              "description": "Azure region (e.g., 'eastus2', 'westeurope')."
+            },
+            "isPrivate": {
+              "type": "boolean",
+              "description": "Whether the AKS cluster API server is private."
+            },
+            "networkProfile": {
+              "type": "object",
+              "description": "AKS network configuration.",
+              "additionalProperties": false,
+              "properties": {
+                "networkPlugin": {
+                  "type": "string",
+                  "enum": ["azure", "kubenet", "none"],
+                  "description": "Network plugin. AGC requires Azure CNI (azure)."
+                },
+                "networkPolicy": {
+                  "type": "string",
+                  "enum": ["azure", "calico", "cilium", "none"],
+                  "description": "Network policy provider."
+                }
+              }
+            }
+          }
+        },
+        "ingressController": {
+          "type": "object",
+          "required": ["type", "version"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["ingress-nginx", "app-routing-addon", "other"],
+              "description": "Ingress controller type. App Routing addon uses ingress-nginx under the hood."
+            },
+            "version": {
+              "type": "string",
+              "description": "Controller version (e.g., '4.10.0' for NGINX Ingress Controller chart)."
+            },
+            "namespace": {
+              "type": "string",
+              "description": "Kubernetes namespace where the controller is deployed."
+            },
+            "ingressClass": {
+              "type": "string",
+              "description": "IngressClass name (e.g., 'nginx', 'webapprouting.kubernetes.azure.com')."
+            }
+          }
+        },
+        "ingresses": {
+          "type": "array",
+          "description": "Ingress resources to migrate.",
+          "items": {
+            "type": "object",
+            "required": ["name", "namespace"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Ingress resource name."
+              },
+              "namespace": {
+                "type": "string",
+                "description": "Ingress resource namespace."
+              },
+              "ingressClassName": {
+                "type": "string",
+                "description": "IngressClass referenced by this Ingress (spec.ingressClassName)."
+              },
+              "annotations": {
+                "type": "object",
+                "description": "ingress-nginx annotations in use on this Ingress. Keys are annotation names (e.g., 'nginx.ingress.kubernetes.io/rewrite-target').",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "hosts": {
+                "type": "array",
+                "description": "Hostnames served by this Ingress.",
+                "items": {
+                  "type": "string",
+                  "format": "hostname"
+                }
+              },
+              "tlsEnabled": {
+                "type": "boolean",
+                "description": "Whether TLS is configured on any rule."
+              },
+              "backendServices": {
+                "type": "array",
+                "description": "Backend Service names referenced by this Ingress.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Summary of ingress-nginx annotations detected across all Ingresses. Key is annotation name, value is an array of Ingress refs using it.",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "namespace"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "namespace": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["agc", "gatewayApi"],
+      "additionalProperties": false,
+      "properties": {
+        "agc": {
+          "type": "object",
+          "required": ["name", "resourceGroup"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "AGC (Application Gateway for Containers) resource name."
+            },
+            "resourceGroup": {
+              "type": "string",
+              "description": "Resource group for AGC."
+            },
+            "subscriptionId": {
+              "type": "string",
+              "description": "Subscription ID for AGC (may differ from source cluster subscription).",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            },
+            "location": {
+              "type": "string",
+              "description": "Azure region for AGC."
+            },
+            "subnet": {
+              "type": "object",
+              "description": "Subnet delegation for AGC.",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Azure resource ID of the subnet delegated to Microsoft.ServiceNetworking/trafficControllers."
+                },
+                "addressPrefix": {
+                  "type": "string",
+                  "description": "CIDR block for the AGC subnet (e.g., '10.1.1.0/24')."
+                }
+              }
+            },
+            "identity": {
+              "type": "object",
+              "description": "Managed identity for AGC.",
+              "required": ["type"],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["SystemAssigned", "UserAssigned"],
+                  "description": "Identity type for AGC."
+                },
+                "clientId": {
+                  "type": "string",
+                  "description": "Client ID of the managed identity (for UserAssigned or post-provision SystemAssigned).",
+                  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                },
+                "principalId": {
+                  "type": "string",
+                  "description": "Principal ID (object ID) of the managed identity for RBAC assignments.",
+                  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                }
+              }
+            },
+            "frontendFqdn": {
+              "type": "string",
+              "description": "Fully qualified domain name of the AGC frontend.",
+              "format": "hostname"
+            }
+          }
+        },
+        "gatewayApi": {
+          "type": "object",
+          "required": ["version"],
+          "additionalProperties": false,
+          "properties": {
+            "version": {
+              "type": "string",
+              "description": "Gateway API CRD version (e.g., 'v1', 'v1beta1')."
+            },
+            "resources": {
+              "type": "array",
+              "description": "Gateway API resources to create or update. Each item references a Kubernetes resource by GVK, not full manifests.",
+              "items": {
+                "type": "object",
+                "required": ["kind", "name", "namespace"],
+                "additionalProperties": false,
+                "properties": {
+                  "apiVersion": {
+                    "type": "string",
+                    "description": "Kubernetes API version (e.g., 'gateway.networking.k8s.io/v1')."
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": ["GatewayClass", "Gateway", "HTTPRoute", "TLSRoute", "TCPRoute", "ReferenceGrant"],
+                    "description": "Gateway API resource kind."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Resource name."
+                  },
+                  "namespace": {
+                    "type": "string",
+                    "description": "Resource namespace. GatewayClass is cluster-scoped and has no namespace."
+                  },
+                  "sourceIngress": {
+                    "type": "object",
+                    "description": "Optional reference to the source Ingress this resource was translated from.",
+                    "required": ["name", "namespace"],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "manifestPath": {
+                    "type": "string",
+                    "description": "Optional path to the YAML manifest file containing the full resource definition."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "workloadIdentity": {
+          "type": "object",
+          "description": "Workload Identity federation for AGC controller.",
+          "required": ["enabled"],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether workload identity is enabled for the AGC controller."
+            },
+            "serviceAccountName": {
+              "type": "string",
+              "description": "Kubernetes ServiceAccount name for the AGC controller (e.g., 'alb-controller')."
+            },
+            "serviceAccountNamespace": {
+              "type": "string",
+              "description": "Kubernetes namespace for the AGC controller ServiceAccount (e.g., 'azure-alb-system')."
+            },
+            "federatedCredentialName": {
+              "type": "string",
+              "description": "Azure Federated Identity Credential name linking the managed identity to the ServiceAccount."
+            }
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Ordered migration steps. Each step is idempotent and includes preconditions and rollback notes.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "phase", "actions"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique step identifier (e.g., 'step-01-provision-agc').",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable step name."
+          },
+          "phase": {
+            "type": "string",
+            "enum": ["prereq", "provision", "configure", "translate", "deploy", "verify", "cutover", "cleanup"],
+            "description": "Migration phase. prereq: checks and validations. provision: IaC deployment. configure: RBAC, identity, networking. translate: Ingress to Gateway API conversion. deploy: apply manifests. verify: test and validate. cutover: traffic switch. cleanup: remove old resources."
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed explanation of what this step does and why."
+          },
+          "preconditions": {
+            "type": "array",
+            "description": "Checks that must pass before executing this step.",
+            "items": {
+              "type": "object",
+              "required": ["check", "errorMessage"],
+              "additionalProperties": false,
+              "properties": {
+                "check": {
+                  "type": "string",
+                  "description": "Human-readable precondition (e.g., 'AGC private cluster support is GA in target region', 'Kubernetes version >= 1.28')."
+                },
+                "errorMessage": {
+                  "type": "string",
+                  "description": "Error message to display if the precondition fails."
+                },
+                "blockingLevel": {
+                  "type": "string",
+                  "enum": ["error", "warning"],
+                  "description": "Whether failure blocks step execution (error) or is advisory (warning)."
+                }
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "description": "Concrete actions to execute in this step.",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["type"],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["command", "apply-manifest", "terraform", "bicep", "helm", "kubectl", "manual"],
+                  "description": "Action type. command: shell command. apply-manifest: kubectl apply. terraform/bicep: IaC. helm: Helm install/upgrade. kubectl: other kubectl operations. manual: human intervention required."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "What this action does."
+                },
+                "command": {
+                  "type": "string",
+                  "description": "Shell command to execute (for type=command)."
+                },
+                "manifestPath": {
+                  "type": "string",
+                  "description": "Path to manifest file (for type=apply-manifest, relative to plan root)."
+                },
+                "modulePath": {
+                  "type": "string",
+                  "description": "Path to Terraform or Bicep module (for type=terraform or bicep)."
+                },
+                "helmChart": {
+                  "type": "string",
+                  "description": "Helm chart reference (for type=helm, e.g., 'oci://mcr.microsoft.com/aks/alb/helm/alb-controller')."
+                },
+                "helmValues": {
+                  "type": "string",
+                  "description": "Path to Helm values file (for type=helm)."
+                },
+                "instructions": {
+                  "type": "string",
+                  "description": "Manual instructions (for type=manual)."
+                }
+              }
+            }
+          },
+          "rollback": {
+            "type": "object",
+            "description": "Rollback instructions if this step fails or must be reverted.",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "How to undo this step."
+              },
+              "commands": {
+                "type": "array",
+                "description": "Shell commands to execute for rollback.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "verification": {
+            "type": "array",
+            "description": "Checks to verify this step completed successfully.",
+            "items": {
+              "type": "object",
+              "required": ["check"],
+              "additionalProperties": false,
+              "properties": {
+                "check": {
+                  "type": "string",
+                  "description": "Verification check (e.g., 'AGC frontend responds on HTTPS', 'HTTPRoute status is Accepted')."
+                },
+                "command": {
+                  "type": "string",
+                  "description": "Shell command to verify (e.g., 'kubectl get httproute hello-world -o jsonpath=.status.conditions')."
+                }
+              }
+            }
+          },
+          "dependsOn": {
+            "type": "array",
+            "description": "Step IDs that must complete before this step can start.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "description": "Known risks and blockers for this migration plan.",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Risk identifier (e.g., 'risk-01-agc-private-cluster-preview').",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+            "description": "Risk severity. critical: blocks migration. high: may cause outage. medium: degraded experience. low: minor impact."
+          },
+          "description": {
+            "type": "string",
+            "description": "What the risk is and why it matters."
+          },
+          "mitigation": {
+            "type": "string",
+            "description": "How to mitigate or work around this risk."
+          },
+          "relatedAdr": {
+            "type": "string",
+            "description": "Optional link to an ADR documenting this risk (e.g., 'docs/adr/ADR-003-agc-private-cluster-preview-gate.md')."
+          },
+          "relatedSteps": {
+            "type": "array",
+            "description": "Step IDs affected by this risk.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "tooling": {
+      "type": "object",
+      "description": "Tools and versions used to generate this plan. Supports ADR-001 wedge of orchestrating multiple upstream tools.",
+      "additionalProperties": false,
+      "properties": {
+        "ingress2gatewayVersion": {
+          "type": "string",
+          "description": "Version of kubernetes-sigs/ingress2gateway used for translation (e.g., 'v1.0.0')."
+        },
+        "azureMigrationUtilityVersion": {
+          "type": "string",
+          "description": "Version of Azure/Application-Gateway-for-Containers-Migration-Utility (if used)."
+        },
+        "runbookVersion": {
+          "type": "string",
+          "description": "Version of this repository's runbook (e.g., git commit SHA or tag)."
+        },
+        "generatedBy": {
+          "type": "string",
+          "description": "System or tool that generated the plan (e.g., 'mcp-server-azure-architect', 'manual')."
+        },
+        "additionalTools": {
+          "type": "object",
+          "description": "Other tools used in plan generation. Key is tool name, value is version string.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

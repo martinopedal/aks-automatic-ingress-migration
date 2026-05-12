@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AGC Module Output Schema",
+  "description": "Parity contract for Application Gateway for Containers base module outputs. Both Terraform and Bicep modules must expose these keys with matching types.",
+  "type": "object",
+  "required": ["alb_id", "alb_name", "frontend_id", "frontend_fqdn", "association_id"],
+  "properties": {
+    "alb_id": {
+      "type": "string",
+      "description": "Azure resource ID of the Application Gateway for Containers (trafficController)"
+    },
+    "alb_name": {
+      "type": "string",
+      "description": "Name of the Application Gateway for Containers resource"
+    },
+    "frontend_id": {
+      "type": "string",
+      "description": "Azure resource ID of the AGC frontend"
+    },
+    "frontend_fqdn": {
+      "type": "string",
+      "description": "Fully qualified domain name of the AGC frontend"
+    },
+    "association_id": {
+      "type": "string",
+      "description": "Azure resource ID of the subnet association to the trafficController"
+    }
+  }
+}
