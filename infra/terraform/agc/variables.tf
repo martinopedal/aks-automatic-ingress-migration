@@ -15,7 +15,8 @@ variable "resource_group_name" {
 
 variable "location" {
   type        = string
-  description = "Azure region for AGC resources. Must be one of the 23 AGC-supported regions. See docs/agc-region-matrix.md"
+  description = "Azure region for AGC resources. If null, defaults to resource group location. Must be one of the 23 AGC-supported regions. See docs/agc-region-matrix.md"
+  default     = null
 }
 
 variable "subnet_id" {
