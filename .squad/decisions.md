@@ -221,6 +221,14 @@ After writing the inbox file, Coordinator spawns Scribe (background, haiku) to m
 
 **Source:** User directive — "always ensure everything is written into squad so we can break off sessions without issues".
 
+### 11. Voice sweep + deck redesign spawn (closed) (Coordinator)
+
+**Date:** 2026-05-12  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+Spawned Sage (docs voice sweep, chore/docs-voice-sweep) and Sage-deck (reveal.js redesign, chore/presentation-redesign) as parallel background agents on 2026-05-12T13:16Z. Both agents completed successfully. PR #49 shipped voice and hygiene sweep across 21 files per `.squad/decisions/inbox/coordinator-spawn-sage-atlas.md`. PR #50 shipped presentation redesign with Charcoal Minimal palette and pptx design principles. PR #51 logged learnings to `.squad/agents/sage/history.md`. All three PRs merged at 13:38-13:40Z. Spawn manifest closed.
+
 ## Governance
 
 - All meaningful changes require team consensus

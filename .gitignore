@@ -11,5 +11,8 @@ __pycache__/
 .squad/log/
 .squad/decisions/inbox/
 .squad/sessions/
+# Squad: temp files Scribe creates for `git commit -F`
+.squad/commit-msg*
+.squad/*.tmp
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
