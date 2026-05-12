@@ -15,7 +15,8 @@ Start at the runbook overview. Each phase is independently runnable and ends wit
 | Path | What you get |
 |---|---|
 | [Architecture decisions](./adr/) | ADR-001 positioning, ADR-002 Bicep+Terraform parity contract, ADR-003 AGC private cluster preview gate, ADR-004 toolkit posture on preview features |
-| [Migration runbook](./runbook/00-prereq-agc-availability.md) | 10-phase end-to-end runbook from assessment to rollback |
+| [Migration runbook](./runbook/00-prereq-agc-availability.md) | 10-phase end-to-end runbook from assessment to rollback (standard AKS) |
+| [AKS Automatic add-on path](./aks-automatic-path.md) | Add-on (preview) enablement sequence for AKS Automatic users, since Helm is unsupported on Automatic per the [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) |
 | [Quickstart sample](../examples/hello-world/README.md) | Smallest reproducible AGC + Gateway API + Workload Identity demo, ALZ Corp defaults |
 | [Migration helper scripts](../scripts/migration/README.md) | PowerShell cmdlets for assessment, conversion, and traffic cutover |
 | [Presentation deck](../presentation/README.md) | reveal.js HTML deck for internal briefings |

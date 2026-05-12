@@ -38,6 +38,10 @@ See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix i
 
 ## Resources
 
+### AKS Automatic users
+
+The standard runbook in this repo provisions AGC via Helm-installed ALB Controller, which is **not supported on AKS Automatic** per the [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq). AKS Automatic users must use the AGC ALB Controller AKS add-on (preview). See [`docs/aks-automatic-path.md`](docs/aks-automatic-path.md) for the verified enablement sequence.
+
 ### Preview features
 
 Microsoft has shipped two preview features that change the migration story. See [`docs/preview-features.md`](docs/preview-features.md).

@@ -22,7 +22,7 @@ All new customer-facing docs in `docs/` must include the disclaimer from `docs/_
 
 - No em dashes in any markdown or code comments. Use commas, parentheses, or rewrite.
 - Bicep + Terraform parity: every IaC change in one stack must be mirrored in the other before merge.
-- Sample apps under `samples/` must run on AKS Automatic with no public IPs.
+- Sample apps under `examples/` target standard AKS by default and must run with no public IPs (`azure-alb-internal` GatewayClass). AKS Automatic users follow [`docs/aks-automatic-path.md`](docs/aks-automatic-path.md) per ADR-004.
 
 ## Validation gates
 

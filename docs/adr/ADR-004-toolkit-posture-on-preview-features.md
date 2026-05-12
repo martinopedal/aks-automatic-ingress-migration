@@ -2,9 +2,9 @@
 
 *Not an official Microsoft product. Community migration toolkit. See LICENSE.*
 
-**Status:** Proposed  
+**Status:** Accepted  
 **Date:** 2026-05-13  
-**Deciders:** Lead
+**Deciders:** Lead, Coordinator (per user direction)
 
 ## Context
 
@@ -60,17 +60,25 @@ However, we WILL document preview features as alternatives with clear risk state
 
 ### Question B: Should this toolkit ship IaC for the AGC AKS add-on path?
 
-**No, but document it.** This toolkit will NOT ship IaC modules for the AGC ALB Controller add-on path.
+**No, but document it as a first-class path for AKS Automatic users.** This toolkit will NOT ship IaC modules for the AGC ALB Controller add-on path, but will document the verified `az aks update` enablement sequence in [`docs/aks-automatic-path.md`](../aks-automatic-path.md).
 
-The add-on auto-creates identity in the MC_ resource group. This violates the separation of concerns established in ADR-002 (IaC provisions infrastructure, identity is separate) and in runbook phase 03 (Iris owns identity wiring). Auto-created identities in node resource groups are outside customer control and harder to audit in ALZ Corp environments where RBAC and identity lifecycle are governed processes.
+Rationale for not shipping IaC:
 
-If the add-on reaches GA and becomes the Microsoft-recommended path, we will revisit. Until GA, the Helm-based path is the stable, production-supported option. The add-on is a convenience for customers willing to accept preview risk and MC_ resource group identity management.
+1. The add-on auto-creates identity in the MC_ resource group. This violates the separation of concerns established in ADR-002 (IaC provisions infrastructure, identity is separate) and in runbook phase 03 (Iris owns identity wiring). Auto-created identities in node resource groups are outside customer control and harder to audit in ALZ Corp environments where RBAC and identity lifecycle are governed processes.
+2. The add-on does not produce the same outputs as the Helm path (`agc_identity_client_id`, `agc_subnet_id`, customer-chosen identity name and subnet name). Wrapping it in a Terraform or Bicep module would either break the parity contract (ADR-002) or require a parallel module set with different outputs that downstream consumers must branch on. Both options dilute the toolkit's value.
+3. Preview-as-code is fragile. The add-on is currently behind two preview feature flags (`ManagedGatewayAPIPreview`, `ApplicationLoadBalancerPreview`). If schema or behavior changes at GA, IaC modules become churn that re-implementers must track. Documentation of the canonical `az aks update` command is more durable.
 
-We WILL add a section to `docs/runbook/03-deploy-agc-controller.md` documenting the add-on as an alternative with these warnings:
-1. Preview feature, excluded from SLA.
-2. Auto-creates identity in MC_ resource group, outside typical ALZ Corp governance scope.
-3. No IaC examples provided in this toolkit. Customers must run `az aks update` manually and accept add-on-managed identity and subnet.
-4. Link to [Microsoft's add-on documentation](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon).
+Rationale for documenting it as a first-class AKS Automatic path:
+
+1. Per the [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) (accessed 2026-05-13): "Helm deployments of the ALB Controller aren't supported with AKS Automatic." The add-on is the only supported AGC path on AKS Automatic.
+2. The toolkit's stated audience is AKS Automatic users planning migration before the November 2026 ingress-nginx retirement deadline (per `AGENTS.md`). Without documenting the add-on path, the toolkit cannot serve its declared audience.
+3. Customers who need standard AKS retain the Helm path with full IaC. AKS Automatic customers get a documented, citation-grounded enablement sequence. Both audiences are served without diluting the IaC parity contract.
+
+We have:
+
+1. Created [`docs/aks-automatic-path.md`](../aks-automatic-path.md) with the verified add-on enablement sequence, identity scope notes, validation steps, and rollback. All `az` commands are quoted from the canonical [add-on quickstart](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon).
+2. Marked the add-on path with explicit preview risk warnings linking to [Azure preview supplemental terms](https://azure.microsoft.com/support/legal/preview-supplemental-terms/).
+3. Cross-linked from `README.md`, `docs/index.md`, `docs/preview-features.md`, and the AKS Automatic row of `docs/preview-features.md`'s migration paths table.
 
 ### Question C: Should we document the App Routing Gateway API preview?
 
@@ -103,7 +111,7 @@ This positions the toolkit clearly: we are the AGC path. App Routing Gateway API
 
 ### Neutral
 
-- **No immediate code changes.** This ADR is documentation-only. No IaC changes, no Helm chart changes. Sage updates runbook and creates `docs/alternatives.md`.
+- **No immediate IaC code changes.** This ADR ships one new documentation page (`docs/aks-automatic-path.md`) and updates cross-references. No Terraform, Bicep, or Helm chart changes.
 
 ## Alternatives Considered
 
