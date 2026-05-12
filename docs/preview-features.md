@@ -101,7 +101,7 @@ Note that the AKS Automatic + AGC path requires preview feature flags `ManagedGa
 
 ## Toolkit posture
 
-This toolkit currently ships Helm-based AGC IaC, which is supported only for **standard AKS** (not AKS Automatic) per the FAQ above. Whether to add support for the preview AKS add-on path that AKS Automatic customers require is tracked in [ADR-004](./adr/ADR-004-toolkit-posture-on-preview-features.md).
+This toolkit ships Helm-based AGC IaC, which is supported only for **standard AKS** (not AKS Automatic) per the FAQ above. For AKS Automatic users, the toolkit documents the AGC ALB Controller add-on (preview) enablement sequence in [`docs/aks-automatic-path.md`](./aks-automatic-path.md). Per [ADR-004](./adr/ADR-004-toolkit-posture-on-preview-features.md), the toolkit does not ship Terraform or Bicep modules for the add-on path because preview-as-code is fragile and the add-on auto-creates identity outside customer-controlled scope.
 
 ## References
 
