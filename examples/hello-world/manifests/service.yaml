@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  namespace: hello-world
+spec:
+  selector:
+    app: hello-world
+  ports:
+    - name: http
+      port: 80
+      # hashicorp/http-echo listens on 5678 in this sample deployment.
+      targetPort: 5678
