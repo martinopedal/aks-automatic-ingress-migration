@@ -83,7 +83,7 @@ Bad: "Make sure to plan your Kubernetes networking properly."
 - Headings sentence-case where the rendering allows it. Avoid title-case for body headings.
 - Code blocks have language tags so renderers can highlight them.
 - Citations to external docs go inline near the claim, not parked in a "References" section that nobody scrolls to. A trailing "References" section is fine if the body also names the source where it matters.
-- Every factual claim about retirement dates, default behaviour, or version-specific behaviour must link to a primary source (Microsoft Learn, upstream GitHub release, RFC).
+- Every factual claim about retirement dates, default behaviour, version-specific behaviour, region lists, supported feature flags, or SLAs links inline (not in a trailing References section) to a primary source: learn.microsoft.com URL or upstream GitHub release page. Lists copied from a source must match the source exactly. If a claim cannot be cited from public material, do not make it.
 
 ## Norwegian rules (when applicable)
 
@@ -101,6 +101,31 @@ Before declaring a doc done:
 6. Every claim about a date or default behaviour links to a primary source?
 
 If any of these fails, send it back.
+
+## Citation hygiene examples
+
+### ✓ Good citation (inline, verifiable)
+
+> AGC is GA and supports 23 regions, per [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview) (accessed 2026-05-13): Australia East, Brazil South, Canada Central, Central India, Central US, East Asia, East US, East US 2, France Central, Germany West Central, Korea Central, North Central US, North Europe, Norway East, South Central US, Southeast Asia, Switzerland North, UAE North, UK South, West US, West US 2, West US 3, West Europe.
+
+Why this works:
+- Citation is inline, immediately after the claim.
+- Region list is exact and complete, copied from source.
+- Access date provided.
+- Reader can verify the claim by following the link.
+
+### ✗ Bad citation (invented list, wrong source)
+
+> AGC is GA and supports major Azure regions. Most customers deploy in West Europe, North Europe, or East US. See [AKS overview](https://learn.microsoft.com/azure/aks/intro-kubernetes) for details.
+
+Why this fails:
+- "Major Azure regions" is vague. No specific list.
+- "Most customers deploy in..." is an invented claim with no source.
+- AKS overview page does not list AGC regions. Wrong source cited.
+- No access date.
+- Reader cannot verify the claim.
+
+Rule: If you copy a list (regions, feature flags, versions, supported configurations) from a Microsoft Learn page, copy it exactly and cite the specific page inline. If you infer or summarize, you are inventing, and the citation is false.
 
 ## What to do instead
 
