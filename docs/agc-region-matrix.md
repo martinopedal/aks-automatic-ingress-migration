@@ -4,47 +4,43 @@
 
 ---
 
-Application Gateway for Containers (AGC) has reached general availability and is deployed across multiple Azure regions. This page tracks regional availability as of the access date below.
+Application Gateway for Containers (AGC) has reached general availability and is deployed across 23 Azure regions as of 2026-05-12.
 
-**Source:** Microsoft Learn AGC overview page accessed 2026-05-12. When in doubt, check the authoritative source to confirm current availability before deployment.
+Source: [Application Gateway for Containers overview, Supported regions](https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions) (accessed 2026-05-12).
+
+This is a snapshot. The MS Learn page is canonical. Verify before deployment.
 
 ## Regional support table
 
-| Azure Region | AGC GA Status | Notes |
-|---|---|---|
-| East US | GA | Available |
-| East US 2 | GA | Available |
-| West US | GA | Available |
-| West US 2 | GA | Available |
-| West US 3 | GA | Available |
-| Central US | GA | Available |
-| North Central US | GA | Available |
-| South Central US | GA | Available |
-| Canada East | GA | Available |
-| Canada Central | GA | Available |
-| North Europe | GA | Available |
-| West Europe | GA | Available |
-| UK South | GA | Available |
-| UK West | GA | Available |
-| France Central | GA | Available |
-| Germany West Central | GA | Available |
-| Switzerland North | GA | Available |
-| Sweden Central | GA | Available |
-| Norway East | GA | Available |
-| Southeast Asia | GA | Available |
-| East Asia | GA | Available |
-| Japan East | GA | Available |
-| Australia East | GA | Available |
-
-**Note:** AGC was available in 23+ Azure regions as of 2026-05. For the authoritative current list of supported regions, consult the [Application Gateway for Containers overview](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview) on Microsoft Learn.
+| Azure Region | AGC GA Status |
+|---|---|
+| Australia East | GA |
+| Brazil South | GA |
+| Canada Central | GA |
+| Central India | GA |
+| Central US | GA |
+| East Asia | GA |
+| East US | GA |
+| East US 2 | GA |
+| France Central | GA |
+| Germany West Central | GA |
+| Korea Central | GA |
+| North Central US | GA |
+| North Europe | GA |
+| Norway East | GA |
+| South Central US | GA |
+| Southeast Asia | GA |
+| Switzerland North | GA |
+| UAE North | GA |
+| UK South | GA |
+| West Europe | GA |
+| West US | GA |
+| West US 2 | GA |
+| West US 3 | GA |
 
 ## Regional requirements
 
-AGC requires:
-
-- Azure CNI networking (static or dynamic IP assignment). Kubenet is not supported.
-- A delegated subnet with `Microsoft.ServiceNetworking/trafficControllers` delegation. Subnet size must be `/24` or larger.
-- Appropriate RBAC on the subnet and AGC resource for the ALB controller managed identity.
+AGC requires a delegated subnet with `Microsoft.ServiceNetworking/trafficControllers` delegation and Azure CNI networking (Kubenet is not supported). Source: [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview) (accessed 2026-05-12).
 
 ## Private cluster considerations
 

@@ -26,6 +26,10 @@ Before starting Phase 01, confirm:
 - [ ] `ingress2gateway` >= 0.3.0 is on PATH ([upstream releases](https://github.com/kubernetes-sigs/ingress2gateway/releases), accessed 2026-04-22).
 - [ ] Read [ADR-003](../adr/ADR-003-agc-private-cluster-preview-gate.md). If your cluster is private and AGC private cluster support is still in preview in your region, you may need a public bastion path for validation.
 
+**Canonical region list:** See the live list at [Application Gateway for Containers overview, Supported regions](https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions). Snapshot in [`docs/agc-region-matrix.md`](../agc-region-matrix.md).
+
+**Preview alternatives:** Microsoft has shipped two preview features that change the migration story. See [`docs/preview-features.md`](../preview-features.md) for App Routing Gateway API implementation and AGC ALB Controller AKS add-on.
+
 ## Timeline assumption
 
 Plan for **3-6 calendar months** end-to-end for an ALZ Corp environment with realistic change windows, security review, and DR cutover testing. Phases are sized so each can be paused and resumed without leaving the cluster in an unhealthy state.
