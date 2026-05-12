@@ -10,6 +10,21 @@ Triaged 10 draft @copilot PRs.
 - Left 2 PRs in draft with REQUEST_CHANGES comments
 - Created decision drop-file at `.squad/decisions/inbox/lead-pr-triage-2026-05-12.md`
 
+## Team-Wide Decisions and Cross-Agent Impact
+
+### 2026-05-12: Required Status Checks Canonical List
+
+The canonical required status checks for `main` branch (documented in `.squad/decisions.md`) are:
+- `scan` (gitleaks)
+- `analyze (actions)` (CodeQL with matrix)
+- `review` (dependency review action)
+- `terraform` (validate.yml job, unprefixed)
+- `bicep` (validate.yml job, unprefixed)
+- `manifests` (validate.yml job, unprefixed)
+- `Validate AGC Module Parity` (iac-parity.yml workflow name)
+
+**Cross-agent impact:** All agents (Forge, Atlas, Iris, Sentinel, Sage) opening PRs to `main` must ensure these checks pass. This is enforced via `.github/workflows/branch-protection.yml` (PR #45).
+
 ## Learnings
 
 ### @copilot output quality patterns (2026-05-12)
