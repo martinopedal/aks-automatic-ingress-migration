@@ -90,19 +90,24 @@ kubectl get gatewayclass azure-alb-external
 
 ## Migration paths summary
 
-| Starting state | Microsoft's recommended path | Citation |
+| Starting state | Recommended path | Citation |
 |---|---|---|
-| App Routing add-on (NGINX) | App Routing Gateway API impl (preview) | [Enable application routing with Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api) |
-| OSS NGINX (helm-installed) | Either: (a) move to App Routing add-on NGINX through Nov 2026; (b) move to App Routing Gateway API impl; (c) move to AGC | [Enable application routing with Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api) |
-| Adopting AGC fresh | Helm-based ALB Controller (GA) OR AGC AKS add-on (preview) | [Quickstart: Deploy Application Gateway for Containers ALB controller add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) |
+| App Routing add-on (managed NGINX) | App Routing Gateway API impl (preview) | [Enable application routing with Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api) |
+| OSS NGINX (Helm-installed) on standard AKS | Migrate directly to AGC (Helm-installed ALB Controller, GA) or to App Routing Gateway API impl (preview) | [Quickstart: Deploy AGC ALB Controller (Helm)](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller) |
+| Adopting AGC on standard AKS | Helm-based ALB Controller (GA) OR AGC AKS add-on (preview) | [Quickstart: Deploy AGC ALB Controller AKS add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) |
+| Adopting AGC on **AKS Automatic** | **AGC AKS add-on (preview) only** — Helm install is unsupported on Automatic | [AGC FAQ, AKS Automatic support](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) |
+
+Note that the AKS Automatic + AGC path requires preview feature flags `ManagedGatewayAPIPreview` and `ApplicationLoadBalancerPreview`. Per ADR-004, this toolkit treats preview features as documented alternatives and does not recommend them as the primary production path.
 
 ## Toolkit posture
 
-This toolkit currently ships Helm-based AGC IaC. The preview AKS add-on is documented for awareness. Whether this toolkit will support that path is tracked in ADR-004-toolkit-posture-on-preview-features.md (Lead is drafting concurrently).
+This toolkit currently ships Helm-based AGC IaC, which is supported only for **standard AKS** (not AKS Automatic) per the FAQ above. Whether to add support for the preview AKS add-on path that AKS Automatic customers require is tracked in [ADR-004](./adr/ADR-004-toolkit-posture-on-preview-features.md).
 
 ## References
 
 - [Enable application routing with Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api)
-- [Quickstart: Deploy Application Gateway for Containers ALB controller add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon)
+- [Quickstart: Deploy AGC ALB Controller AKS add-on (preview)](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon)
+- [Quickstart: Deploy AGC ALB Controller via Helm (GA)](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller)
 - [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview)
+- [Application Gateway for Containers FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq)
 - [Ingress NGINX maintenance ends March 2026](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/)
