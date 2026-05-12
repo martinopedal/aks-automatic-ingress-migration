@@ -278,6 +278,43 @@ Wave 3 fixed the remaining citation defects discovered during the wave 2 audit a
 
 **Validation gates passed (post-merge):** terraform fmt -check -recursive, terraform validate, az bicep build, git status clean.
 
+### 14. Citation grounding wave 4: AKS Automatic add-on path (Coordinator)
+
+**Date:** 2026-05-13  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+User asked: with the AGC ALB Controller AKS add-on now in preview, should the toolkit include support? Combined with "only use external public source material" + "do not stop", the answer is yes via documentation. Wave 4 ships that as two PRs.
+
+**Wave 4 PRs (sequential, executed by @copilot direct):**
+
+- #67 (feat/aks-automatic-addon-runbook): Pivot ADR-004 from Proposed to Accepted with the documented-but-not-IaC posture. Ship `docs/aks-automatic-path.md` with the verified `az aks update --enable-gateway-api --enable-application-load-balancer` sequence, identity scope notes (the add-on auto-creates `applicationloadbalancer-<cluster>` MI in the MC_ resource group), validation, and rollback. All commands quoted from the canonical [add-on quickstart](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon). Cross-link from README, docs/index, preview-features. Update CONTRIBUTING.md sample-app rule to match wave 3 reframing (examples are standard AKS by default; AKS Automatic users follow new doc).
+- #68 (chore/citation-housekeeping): Three remaining wave 3 follow-ups cleared. Removed fictional `blog.aks.azure.com` URL from sage charter. Added Mar 2026 + Nov 2026 citations to team.md "Deadline anchor". Added v1.1.0 latest reference to scripts/migration/README ingress2gateway snippet alongside v1.0.0 GA pin.
+
+**Posture decision (ADR-004 Accepted):**
+
+- Document the add-on path as first-class for AKS Automatic users.
+- Do NOT ship Terraform or Bicep for the add-on path because (a) preview-as-code is fragile, (b) the add-on auto-creates identity in `MC_*` outside customer governance scope, (c) outputs do not match the Helm path's ADR-002 parity contract.
+
+This serves both audiences without diluting the IaC parity contract: standard AKS users get the full Helm IaC path; AKS Automatic users get a documented, citation-grounded enablement sequence.
+
+### 15. Citation grounding wave 5: voice profile sweep (Coordinator)
+
+**Date:** 2026-05-13  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+Two final sweeps after wave 4.
+
+**Wave 5 PRs:**
+
+- #69 (chore/locale-less-urls-wave5): Stripped 19 `learn.microsoft.com/en-us/` and 1 `azure.microsoft.com/en-us/updates` locale-prefixed URLs across 7 files (manifests/README, docs/compatibility-matrix, docs/agc-region-matrix, ADR-002, ADR-003, runbook 10-threat-model, runbook 20-identity-wiring-agc-controller). Voice profile prefers locale-less URLs because learn.microsoft.com routes to the correct locale via Accept-Language headers and locale-less URLs survive Microsoft's locale-routing changes.
+- #70 (chore/voice-profile-violations): Three voice profile violations found post-sweep. Replaced "production-ready" (banned phrase) in ADR-004 line 131 with "stable". Replaced em dashes in docs/agc-region-matrix.md and docs/preview-features.md with comma and parenthetical respectively.
+
+**Repo voice state after wave 5:** zero em dashes, zero en dashes, zero banned phrases across docs/, README.md, CONTRIBUTING.md, AGENTS.md, examples/. All MS Learn URLs locale-less.
+
+**Branch hygiene:** Pruned 14 stale remote tracking branches and 5 stale local branches after PR merges. Closed orphan `chore/wave2-lead-finalize` (was PR #62, closed redundant by Lead's reconciliation per entry 12). Repo now has `main` as the only remote head.
+
 ## Governance
 
 - All meaningful changes require team consensus
