@@ -25,4 +25,4 @@
 - **Project:** aks-automatic-ingress-migration, AKS Automatic migration toolkit from ingress-nginx to AGC + Gateway API
 - **Stack:** Terraform (azurerm + azapi), Bicep, Helm, Gateway API, PowerShell
 - **Created:** 2026-04-22
-- **Deadline anchor:** Nov 2026 App Routing critical-only date
+- **Deadline anchor:** App Routing managed NGINX stops receiving Azure support after November 2026, per the caution callout in [Enable application routing with Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api). Upstream `ingress-nginx` project enters maintenance mode in March 2026, per [Ingress NGINX retirement announcement](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/).
