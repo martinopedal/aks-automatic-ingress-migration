@@ -18,6 +18,9 @@ on:
       - 'scripts/validate-iac-parity.ps1'
       - '.github/workflows/iac-parity.yml'
 
+permissions:
+  contents: read
+
 jobs:
   validate-agc-module:
     name: Validate AGC Module Parity
