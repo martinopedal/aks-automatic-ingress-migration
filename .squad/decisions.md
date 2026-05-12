@@ -173,6 +173,54 @@ Triaged 10 draft @copilot PRs. Result: 8 approved ready for merge, 2 left in dra
 
 **Key learning:** @copilot output quality is generally strong. Case-sensitivity pitfall occurs when GitHub Actions uses matrix suffixes; recommend explicit guidance on exact check names as displayed in Actions UI.
 
+### 9. Project voice profile adopted as standard (Coordinator)
+
+**Date:** 2026-05-12  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Active
+
+Project prose now follows the voice profile at `.squad/skills/voice-profile/SKILL.md`. Profile is anonymized from maintainer's `C:\git\news-fetcher\src\drafts\voice_profile.md` (2026-05 revision) and global `~/.copilot/skills/writer/SKILL.md`.
+
+**Applies to:** All prose in the repository. Docs, ADRs, runbook, READMEs, presentation copy, PR descriptions, commit messages.
+
+**Core rules:**
+- No em dashes or en dashes. Use commas, periods, or "and" instead.
+- Emojis restricted to `✓` (checkmark) and `✗` (cross) as status markers only.
+- Banned phrases: "leveraging", "seamless", "unlock", "journey", "robust", "comprehensive", "cutting-edge", "deep dive", "furthermore", "moreover", "additionally", "at the end of the day", "elevate", "empower", "accelerate", "streamline", "optimize", "enterprise-grade", "production-ready", "future-proof", "AI-powered", "digital transformation", and 20+ others.
+
+**Anti-AI structural rules:** No question-then-answer rhythm, no forced analogies, no bold-heading-list filler, no tricolon openers, no moral-of-story endings, no false-contrast frames.
+
+**Quality gate:** Before any prose is merged, verify (1) opening sentence stops scroll, (2) at least one specific technical detail (version, default, flag, subnet size), (3) concrete CTA, (4) no em dashes or banned phrases, (5) no AI structural patterns, (6) all claims about dates/defaults link to primary sources.
+
+**Confidence:** Medium. Profile is test-drive from news-fetcher; may need refinement after first sweep.
+
+**Next action:** Sage sweeps 18 docs + 3 READMEs for voice hygiene. Baseline: 1 "leverag*" match, 10 em dashes, emoji audit pending.
+
+### 10. Persistent session logging rule established (Coordinator)
+
+**Date:** 2026-05-12  
+**Author:** martinopedal (via Squad coordinator)  
+**Type:** Directive (permanent)  
+**Status:** Active
+
+Every session must write all in-flight work, decisions, scope, file lists, and follow-up plans to `.squad/` proactively before it ends. Sessions can break for any reason (compaction, accidental close, machine sleep, network drop), and the next session must pick up exactly where the previous one left off without re-asking the user.
+
+**Why:** SQL todos (`.session/database.sqlite`) are session-scoped and do NOT survive across sessions. Only files under `.squad/` persist (decisions, decisions/inbox, skills, agents/*/history, log, orchestration-log).
+
+**Rule:** Before any session-end trigger (compaction signal, user idle, multi-agent spawn, user says "end session"), Coordinator writes current state to `.squad/decisions/inbox/coordinator-{slug}.md` including:
+- Decision or plan in plain prose
+- Exact file paths (input and output)
+- Source references (skills, other repos, MS docs links)
+- Commands or scripts next session must run
+- Status of each work item (planned, in-progress, blocked, done)
+- Ownership assignments (Sage, Atlas, etc.)
+
+After writing the inbox file, Coordinator spawns Scribe (background, haiku) to merge it into `.squad/decisions.md` and commit.
+
+**For multi-agent spawns:** Write spawn manifest to inbox BEFORE launching agents. If spawn fails or session dies mid-launch, next session knows what was supposed to run.
+
+**Source:** User directive — "always ensure everything is written into squad so we can break off sessions without issues".
+
 ## Governance
 
 - All meaningful changes require team consensus
