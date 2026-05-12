@@ -229,6 +229,55 @@ After writing the inbox file, Coordinator spawns Scribe (background, haiku) to m
 
 Spawned Sage (docs voice sweep, chore/docs-voice-sweep) and Sage-deck (reveal.js redesign, chore/presentation-redesign) as parallel background agents on 2026-05-12T13:16Z. Both agents completed successfully. PR #49 shipped voice and hygiene sweep across 21 files per `.squad/decisions/inbox/coordinator-spawn-sage-atlas.md`. PR #50 shipped presentation redesign with Charcoal Minimal palette and pptx design principles. PR #51 logged learnings to `.squad/agents/sage/history.md`. All three PRs merged at 13:38-13:40Z. Spawn manifest closed.
 
+### 12. Citation grounding wave 1+2 (Coordinator)
+
+**Date:** 2026-05-13  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+Following user directive "all items based on mcp learn findings and other credible documentation sources, with references" + "only use external source material in the repo" + "public material", spawned a 4-agent wave 2 to fix-forward the unsourced wave 1 work.
+
+**Wave 1 PRs (#53-#57)** shipped fast but were not consistently grounded in MS Learn. Audit found: Sage's region matrix invented (PR #55 closed unmerged), Atlas's compatibility matrix missing v1.1.0, Forge's IaC API version stale at 2023-11-01.
+
+**Wave 2 PRs (#58, #59, #60, #61):**
+- #58 (Atlas): Compatibility matrix rewrite. Single access-date line, verified Gateway API v1.0.0 release date (2023-10-31 per GitHub), added v1.1.0 row, added two preview tool rows.
+- #59 (Forge): trafficControllers ARM API bumped 2023-11-01 → 2025-01-01 across 6 IaC files. Verified GA stable, no breaking changes. terraform validate + bicep build clean. (Note: this PR also bundled Atlas + Sage + Lead drafts due to shared-cwd parallel-agent contamination, see entry 13.)
+- #60 (Sage): Region matrix rewrite with verified 23-region MS list inline; created `docs/preview-features.md` covering App Routing Gateway API impl (preview) + AGC ALB Controller AKS add-on (preview); updated README Resources + runbook 00 with preview alternatives.
+- #61 (Lead): ADR-004 (Proposed) "Toolkit Posture on Preview Features"; voice profile strengthened with worked ✓/✗ citation hygiene examples; ADR README index entry.
+
+**Confirmed via MS Learn during wave 2:**
+- AGC supported regions: 23 exact list per https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions
+- App Routing Gateway API preview feature flag: `AppRoutingIstioGatewayAPIPreview`, GatewayClass `approuting-istio`, requires Managed Gateway API + aks-preview >= 19.0.0b24
+- AGC ALB Controller AKS add-on preview feature flags: `ManagedGatewayAPIPreview` + `ApplicationLoadBalancerPreview`; auto-creates `applicationloadbalancer-<cluster>` MI in MC_ resource group
+- Ingress NGINX retirement: project maintenance ends March 2026 (kubernetes.dev blog); App Routing add-on Azure support ends November 2026 (app-routing-gateway-api caution callout)
+
+**Lessons captured:**
+- Parallel `task` agents share the cwd and contaminate each other's branches when they all modify files before pushing. PR #59 bundled four agents' work. Resolution: wave 3 ran sequentially.
+- Voice profile required worked examples (✓ good inline verifiable / ✗ bad invented) to enforce citation discipline; abstract rules alone did not prevent fabrication.
+- The legacy URL `http-application-routing-migrate` was repeatedly cited for the November 2026 cutoff. It is for the OLD HTTP application routing addon, not the modern App Routing add-on. Correct source is `app-routing-gateway-api` caution callout.
+
+### 13. Citation grounding wave 3 (Coordinator)
+
+**Date:** 2026-05-13  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+Wave 3 fixed the remaining citation defects discovered during the wave 2 audit and reconciled the toolkit with a load-bearing fact found while verifying ADR-003: per the [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq), AKS Automatic + AGC requires the AKS managed add-on (preview); Helm-installed ALB Controller is unsupported on AKS Automatic.
+
+**Executed sequentially by @copilot directly** (no sub-agents) to avoid the wave-2 shared-cwd contamination pattern.
+
+**Wave 3 PRs:**
+- #63 ADR cleanup: ADR-001 wrong URL fix (http-application-routing-migrate → app-routing-gateway-api caution callout); ADR-003 reframed (dropped uncited Nov 2025 GA date claim, added AKS Automatic FAQ constraint, removed redundant region list, removed unsourced "Web search results" speculation, fixed Mar 2026 vs Nov 2026 conflation).
+- #64 README + docs/index + runbook citations: bumped ingress2gateway 1.0 GA mentions to v1.1.0 latest with v1.0.0 GA reference; added inline citations to Mar 2026 + Nov 2026 timeline claims; replaced parent app-routing URL with app-routing-gateway-api caution callout; bumped stale `>= 0.3.0` to `>= v1.0.0`.
+- #65 AKS Automatic accuracy: removed wrong claim that App Routing add-on is a migration target; added AKS Automatic row to migration paths table; reframed examples/hello-world as standard AKS only (Helm install unsupported on Automatic per FAQ); added blockquote redirects to add-on path in examples/quickstart and hello-world; presentation deck had 9 fixes including kubernetes.dev citation, app-routing-gateway-api citation, ingress2gateway v1.1.0 version freshness, "AGC private cluster preview" frame replaced with "AKS Automatic + add-on preview" frame, and the closing-slide November 2025 typo corrected to November 2026.
+
+**Open follow-ups:**
+1. Re-examine ADR-004 in light of AKS Automatic constraint: ADR-004 (Proposed) recommends NOT shipping add-on IaC, but AKS Automatic literally cannot use the toolkit's Helm-based IaC. May justify either minimal add-on enablement guidance or a scope decision that the toolkit does not target AKS Automatic until the add-on path reaches GA.
+2. CONTRIBUTING.md line 25 ("Sample apps under `samples/` must run on AKS Automatic with no public IPs") is now inconsistent with wave-3 reframing; future cleanup needed.
+3. `scripts/migration/README.md` references `ingress2gateway@v1.0.0` (GA marker, fine as a minimum); could note v1.1.0 latest for discoverability.
+
+**Validation gates passed (post-merge):** terraform fmt -check -recursive, terraform validate, az bicep build, git status clean.
+
 ## Governance
 
 - All meaningful changes require team consensus

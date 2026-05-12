@@ -72,3 +72,17 @@ Activity log for Atlas (Kubernetes manifests, Gateway API translation, Helm).
 - Gateway API v1 CRDs promoted to GA in Gateway API v1.0.0 release (2024-10-30). AKS Automatic 1.30+ recommended for stable support (Kubernetes 1.29 promoted Gateway/HTTPRoute to v1).
 - CI manifest validation uses kubeconform with `--ignore-missing-schemas` (`.github/workflows/validate.yml`). This avoids blocking on AGC-specific CRDs not in kubeconform's built-in schema registry.
 - kubectl --dry-run=client without a live cluster falls back to syntax-only validation (no API server OpenAPI schema fetch).
+
+### 2026-05-13: Wave 2 PR #58 compatibility matrix rewrite
+
+Citation-grounded rewrite of `docs/compatibility-matrix.md`. Single access-date line (no per-row dates), Gateway API v1.0.0 release date verified via [GitHub release tag](https://github.com/kubernetes-sigs/gateway-api/releases/tag/v1.0.0) (2023-10-31, not 2024-10-30 as previously written), v1.1.0 row added, two preview tool rows added (App Routing Gateway API impl, AGC ALB Controller AKS add-on).
+
+**Lesson:** The first-pass compatibility matrix mis-stated the Gateway API v1.0.0 date by a year (2024 instead of 2023). Always verify release dates against the upstream release tag URL, not memory or another secondary doc. The kubernetes.dev blog post linking to the v1.0.0 release was published October 2023, consistent with the tag date.
+
+### 2026-05-13: Wave 3 corrections to examples and quickstart scoping
+
+PR #65 (executed by @copilot direct) reframed `examples/hello-world` and `examples/quickstart` as targeting standard AKS only, not AKS Automatic. Both READMEs now carry an AKS Automatic blockquote redirecting users to the AGC ALB Controller AKS add-on (preview) path with cross-links to ADR-004 and `docs/preview-features.md`.
+
+Reason: the AGC FAQ states Helm deployments of the ALB Controller are not supported on AKS Automatic. Helm install is the path the toolkit examples use. Therefore the examples cannot run on Automatic without modification.
+
+**Lesson:** Sample scope must match what the install steps actually support. When a constraint exists upstream (FAQ, preview docs), the examples need to either honor it explicitly with a redirect blockquote or implement the alternative path. Half-supporting a platform variant with no warning misleads readers.

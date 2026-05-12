@@ -61,3 +61,11 @@ Per ADR-001, this schema is the orchestration contract consumed by mcp-server-az
 Schema structure defines migration steps with phase enums (prereq, identity, infra, gateway, route, cutover, validate, rollback) and action types (manual, kubectl, helm, terraform, bicep, powershell).
 
 Versioning policy: breaking changes increment version (v1 to v2). Entry point remains at `schema/migration-plan.v1.json` for stable consumers.
+
+### 2026-05-13: Wave 2 PR #59 trafficControllers API version bump
+
+Bumped `Microsoft.ServiceNetworking/trafficControllers` ARM API from `2023-11-01` to `2025-01-01` across 6 IaC files (Terraform azapi resources + Bicep modules). Verified the new API version is GA stable, no breaking schema changes for the toolkit's usage. terraform fmt + validate clean, az bicep build clean.
+
+**Note on contamination:** This PR ended up bundling Atlas (compat matrix), Sage (region matrix + preview-features.md), and Lead (ADR-004 draft) work because all four wave 2 agents ran in parallel sharing the same cwd. Subsequent merges of #58, #60, #61 were no-ops or reconciliation. Wave 3 switched to sequential execution.
+
+**Lesson for IaC API version updates:** When bumping ARM API versions, check both the resource provider GA status (Azure SDK release notes) and any property/schema diffs via `az provider show --resource-types <type>` between versions. For trafficControllers 2023-11-01 → 2025-01-01 the toolkit-used properties (name, location, tags, frontends, associations) were stable.

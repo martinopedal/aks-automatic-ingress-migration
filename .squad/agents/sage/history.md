@@ -169,3 +169,14 @@ The corpus was in better shape than expected. Two phrase rewrites, one British s
 - Push branch `chore/wave2-sage-public-sources` and open PR.
 - Decision summary to `.squad/decisions/inbox/sage-wave2-public-sources.md`.
 - Watch for ADR-004 (Lead is drafting) re toolkit posture on preview features. Preview-features.md links to it even though not yet present.
+
+### 2026-05-13: Wave 3 corrections to wave 2 preview-features.md
+
+PR #65 (executed by @copilot direct) fixed two defects in my wave 2 `docs/preview-features.md`:
+
+1. Removed claim that the App Routing add-on (managed NGINX) is a migration target. It is the source workload; users are migrating off it.
+2. Added an AKS Automatic row showing the AGC ALB Controller AKS add-on is the only supported path for AGC on AKS Automatic. Source: [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq) — "Helm deployments of the ALB Controller aren't supported with AKS Automatic."
+
+Strengthened toolkit posture wording to make explicit that the Helm-based IaC in this repo targets standard AKS only, not AKS Automatic.
+
+**Lesson:** When documenting migration paths, distinguish source vs target workloads explicitly. The previous table conflated them. Also: when an add-on path is the only supported route on a platform variant, the platform variant deserves its own row, not a footnote.
