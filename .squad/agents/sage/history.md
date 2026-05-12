@@ -90,3 +90,36 @@ Things to watch for in future sweeps:
 - Any new `**Bold**: filler.` patterns introduced by Atlas, Iris, or Sentinel in their own docs as the contributor base grows.
 
 The corpus was in better shape than expected. Two phrase rewrites, one British spelling, eight heading flips, two README codas, and ten H1 em dashes. The voice profile is mostly preventing future drift, not cleaning up existing damage.
+## 2026-05-12: Presentation deck redesign (pptx skill + voice profile)
+
+**Task:** Redesign `presentation/index.html` to apply pptx skill design principles and the project voice profile. Same 30-slide structure, full visual rebuild. (PR #50)
+
+**Design decisions:**
+- **Palette: Charcoal Minimal** (`#1A1F24` bg, `#E8E6E3` text, `#FFB400` amber). Picked from the pptx skill table because the deck is a delivery-context piece (warning/deadline-driven). Amber as the sharp accent: numeric badges in the section chip, right-edge rule, callout ribbons, code-block left border, stat numbers. Dark throughout (no light/dark sandwich).
+- **Typography:** Georgia (headers) + system sans (body). Tested the four pairings from the pptx skill and Georgia worked best with the charcoal palette because serif weight balances the dark surface; system sans keeps body legible at 26 px.
+- **Motif (two parts that repeat on every slide):**
+  1. Section chip top-left: amber numeric badge `01` + muted-grey section name. Injected post-render via `Reveal.on('ready', ...)` so I did not have to hand-type it 30 times.
+  2. Thin amber rule (2 px, 0.4 opacity) on the right edge via `::after`. Quiet repeat element that signals deck ownership without stealing focus.
+- **Layout variation:** hero, stat-row, 2x2 card grid, two-column (left-heavy and right-heavy variants), inline SVG diagrams (hub-spoke, traffic flow), phase timeline with circular dots, comparison tables, code blocks. Verified no two adjacent slides share a layout.
+- **Section dividers** redesigned: huge serif numeral (`02`, `03`, `04`, `05`) plus title and lede. Replaces the original generic h1+h2 dividers.
+
+**Voice profile applied to slide titles:**
+- `Why now?` → `The planning window is 3 to 6 months.` (dropped question-then-answer)
+- `Migration target` → `What you migrate to.`
+- `PREVIEW reality check` → `Private cluster AGC is still preview.`
+- `End game` → `Get off ingress-nginx before November 2026.` (cover hero)
+- All titles sentence-case, declarative, no em dashes.
+
+**Reveal.js learnings:**
+1. **Chip injection via JS.** Outer `<section data-section="01 / Deadline">` carries the label, JS iterates `:scope > section` children and appends a `.chip` div. Cover slide opts out with `data-nochip`. Avoids polluting markup with 30 repeated chip blocks.
+2. **Right-edge rule via `::after`.** Reveal.js gives every slide `position: relative` so absolute positioning on `::after` just works. No need to wrap content in extra containers.
+3. **No accent line under titles.** The pptx skill explicitly flags this as an AI tell. Borders go on cards, code blocks, table headers, the section chip, and the right edge — never under h2/h3.
+4. **Inline SVG over image assets.** Two diagrams (hub-spoke topology, traffic flow Internet → Front Door → Firewall → AGC → AKS) drawn directly in SVG. Keeps the deck a single self-contained file; no asset pipeline. Used the same charcoal palette and amber accent in stroke colours so diagrams match the slide design.
+5. **HTML entities for status glyphs.** `&#10003;` and `&#10007;` for ✓/✗ in the comparison tables. Avoids emoji rendering inconsistencies and keeps the slide austere.
+6. **Reveal config:** `width: 1280, height: 760, margin: 0.04, transition: 'fade', slideNumber: 'c/t', hash: true`. Fade is calmer than slide transitions for a technical deck. `c/t` slide number reads better than just `c`.
+
+**Tool note:** First `create` attempt failed with "already exists" after `Remove-Item` — the file got restored between calls (likely by an editor watcher or a transient race). Fix: `Remove-Item -Force` immediately followed by `create` in the next response. Pattern to remember when redoing files in this repo.
+
+**Branch hygiene:** Initial commit landed on `chore/docs-voice-sweep` (the prior session's branch from PR #49). Moved it cleanly to a dedicated `chore/presentation-redesign` branch via `git rebase --onto origin/main chore/docs-voice-sweep chore/presentation-redesign` so PR #50 ships as a single commit on top of `main`, independent of #49.
+
+**Final stats:** 1171 lines, 49,449 bytes, 35 `<section>` open/close pairs balanced, 107 `<div>` open/close pairs balanced, 30 inner slides across 5 outer sections.
