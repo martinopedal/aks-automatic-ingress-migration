@@ -196,3 +196,13 @@ Executed comprehensive gap audit across 11 areas (top-level docs, runbook, ADRs,
 
 Full report written to `.squad/decisions/inbox/lead-gap-audit-2026-05-12.md`.
 
+### 2026-05-13: Wave 2 governance + ADR-004 (Proposed)
+
+Owned PR #61 in citation-grounding wave 2: ADR-004 "Toolkit Posture on Preview Features" (Proposed status), voice profile strengthened with worked ✓/✗ citation hygiene examples, ADR README index entry added.
+
+PR #61 was a no-op on ADR-004 because the parallel-spawned wave 2 agents ran in shared cwd and PR #59 (Forge) ended up bundling Atlas + Sage + Lead drafts. ADR-004 shipped with #59. Reconciliation closed #62 as redundant.
+
+**Open governance question raised in wave 3:** ADR-004 recommends NOT shipping add-on IaC. Wave 3 then verified via the AGC FAQ that AKS Automatic literally cannot use the toolkit's Helm-based IaC. ADR-004 may need re-examination. Drafted as follow-up; awaiting user buy-in on toolkit scope.
+
+**Lesson logged:** Background `task` agents share the cwd; parallel write-mode spawns require `git worktree add` per agent or sequential execution. Wave 3 ran sequentially.
+
