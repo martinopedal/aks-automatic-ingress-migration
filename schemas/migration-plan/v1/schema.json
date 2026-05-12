@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/martinopedal/aks-automatic-ingress-migration/main/schemas/migration-plan/v1/schema.json",
   "title": "Migration Plan Schema v1",
-  "description": "Versioned schema for AKS Automatic ingress-nginx to Gateway API + AGC migration plans. Consumed by mcp-server-azure-architect ingress-migration-plan skill and other cross-repo consumers. Breaking changes increment the schema version (v1 to v2).",
+  "description": "Versioned schema for AKS Automatic ingress-nginx to Gateway API + AGC migration plans. Consumed by mcp-server-azure-architect ingress-migration-plan skill and other cross-repo consumers. Breaking changes increment the schema version (v1 to v2). Per ADR-001, this repo orchestrates upstream tools and provides ALZ Corp IaC. This schema is the contract for orchestration, not re-translation.",
   "type": "object",
   "required": ["schemaVersion", "metadata", "source", "target", "steps"],
   "additionalProperties": false,

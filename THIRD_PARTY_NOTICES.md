@@ -100,7 +100,7 @@ The following components are developed as part of this repository and licensed u
 
 ## Migration plan schema (first-party)
 
-- **Source:** `schema/migration-plan.v1.json` (planned)
+- **Source:** `schema/migration-plan.v1.json` (compatibility entry point), `schemas/migration-plan/v1/schema.json` (canonical schema)
 - **Copyright:** Copyright (c) 2026 martinopedal
 - **License:** MIT License (see [LICENSE](LICENSE))
 - **Usage:** Versioned cross-repo contract consumed by `mcp-server-azure-architect`'s `ingress-migration-plan` skill.
