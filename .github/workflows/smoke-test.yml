@@ -44,7 +44,7 @@ jobs:
       can_run: ${{ steps.check.outputs.can_run }}
       reason: ${{ steps.check.outputs.reason }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: check
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -90,7 +90,7 @@ jobs:
       EXPECTED_BODY: ${{ inputs.expected_body || 'hello-world' }}
       PROBE_COUNT: ${{ inputs.probe_count || '10' }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Azure login with OIDC
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
