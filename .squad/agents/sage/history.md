@@ -70,7 +70,7 @@ Branch `chore/docs-voice-sweep`, 16 files modified, opened as PR #49.
 
 What the corpus actually looked like before the sweep, in order of frequency:
 
-1. The dominant violation was H1 em dashes in runbook phase headings. Every single phase file (`00-overview.md` through `09-rollback.md`, 10 files) used the pattern `# Phase NN — Title`. Replaced with `# Phase NN, title`. If a future contributor adds an `11-` or `12-` phase doc, they will almost certainly reach for the em dash by reflex. Worth a lint rule.
+1. The dominant violation was H1 em dashes in runbook phase headings. Every single phase file (`00-prereq-agc-availability.md` through `09-rollback.md`, 10 files) used the pattern `# Phase NN — Title`. Replaced with `# Phase NN, title`. If a future contributor adds an `11-` or `12-` phase doc, they will almost certainly reach for the em dash by reflex. Worth a lint rule.
 
 2. The second most prevalent pattern was bold-heading-colon tricolon filler at the END of READMEs, packaged as `## Style` or `## Design Philosophy`. Two of three module READMEs ended with this pattern (`scripts/migration/README.md`, `presentation/README.md`). The hello-world README was clean. The pattern reads as a sign-off ritual, like a corporate values poster nailed to the bottom of the doc. Both were rewritten as prose paragraphs that name concrete cmdlets, failure modes, and references.
 

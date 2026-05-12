@@ -36,8 +36,8 @@ Both wrappers reference the shared AGC modules under `infra/`. If you copy this 
 
 Complete these tasks before you apply the sample manifests:
 
-1. Install the ALB Controller in `azure-alb-system`.
-2. Configure Workload Identity federation for `system:serviceaccount:azure-alb-system:alb-controller-sa` to the AGC managed identity client ID emitted by the infrastructure wrappers (`agc_identity_client_id`).
+1. Create the AGC managed identity and configure Workload Identity federation per `docs/runbook/03-identity-wiring.md`. The IaC modules in this sample provision the AGC dataplane but do not create the identity. Identity wiring is Iris's domain per project scope decisions.
+2. Install the ALB Controller in `azure-alb-system` and configure Workload Identity federation for `system:serviceaccount:azure-alb-system:alb-controller-sa` to the AGC managed identity client ID.
 3. Confirm the controller is healthy: `kubectl get pods -n azure-alb-system`.
 
 - https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/quickstart-create-application-gateway-for-containers-managed-by-alb-controller
