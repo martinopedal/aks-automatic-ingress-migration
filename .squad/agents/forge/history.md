@@ -45,3 +45,30 @@ Per ADR-001, this schema is the orchestration contract consumed by mcp-server-az
 Schema structure defines migration steps with phase enums (prereq, identity, infra, gateway, route, cutover, validate, rollback) and action types (manual, kubectl, helm, terraform, bicep, powershell).
 
 Versioning policy: breaking changes increment version (v1 to v2). Entry point remains at `schema/migration-plan.v1.json` for stable consumers.
+
+### 2026-05-12: IaC README and Identity Scope Clarification
+
+Shipped PR #54 addressing gap audit items #8 (infra half) and #18 (identity gap).
+
+**Files created:**
+- `infra/README.md`: Top-level navigation for infra/ directory. Covers parity contract per ADR-002, module tree (agc/ with Terraform/Bicep implementations), links to outputs.schema.json and validate-iac-parity.ps1, canonical provisioning guide (runbook 02), identity scope clarification, ALZ Corp defaults, and API versions.
+
+**Files modified:**
+- `examples/hello-world/README.md`: Removed reference to `agc_identity_client_id` output, which neither IaC module exposes. Clarified that identity wiring is Iris's domain per runbook 03.
+
+**Identity scope decision rationale:**
+
+The hello-world README referenced `agc_identity_client_id` as an IaC output, but neither the Terraform nor Bicep module exposes it. Per ADR-002 and decision #2, the IaC modules only handle AGC network and dataplane resources (trafficController, frontend, association). Managed identity creation and Workload Identity federation are Iris's domain per `docs/runbook/03-identity-wiring.md`.
+
+Adding managed identity creation to the IaC modules would require an architecture decision (ADR). This was out of scope for the gap fix. The fix was scoped to documentation only: removed the reference to the missing output and added a note linking to the canonical identity runbook.
+
+**Why doc-fix-only:**
+- IaC module scope is network and AGC dataplane only (per ADR-002).
+- Identity wiring is a separate concern with distinct RBAC requirements (federated credential creation, role assignments).
+- Mixing identity provisioning into the AGC module would couple two orthogonal concerns and violate single responsibility.
+- The identity runbook (03) already exists and covers the full process. No need to duplicate or split the logic.
+
+**Learnings:**
+- Output schemas are the parity contract. If an output is referenced in examples, it must exist in the schema or the reference is a gap.
+- Identity scope decisions must be explicit. Callers expect either (a) IaC provisions identity, or (b) IaC assumes identity exists. Document which pattern is in use.
+- When a gap crosses agent boundaries (IaC vs identity), document the boundary explicitly rather than assuming readers will infer it.
