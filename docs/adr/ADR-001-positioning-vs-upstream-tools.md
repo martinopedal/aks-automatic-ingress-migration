@@ -1,8 +1,10 @@
 # ADR-001: Positioning vs Upstream Tools
 
+*Not an official Microsoft product. Community migration toolkit. See LICENSE.*
+
 **Status:** Accepted  
 **Date:** 2026-04-22  
-**Deciders:** Sage, Lead  
+**Deciders:** Sage, Lead
 
 ## Context
 

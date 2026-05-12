@@ -20,6 +20,7 @@ The documented migration target is Gateway API with Application Gateway for Cont
 - Coexistence and gradual cutover (run NGINX and AGC in parallel, traffic shift).
 - Observability before/after.
 - Operational runbook with checklists.
+- Sample app: [`examples/hello-world`](./examples/hello-world/README.md) with Workload Identity, internal AGC frontend, and Gateway API resources.
 
 ## What's out of scope
 
@@ -46,6 +47,14 @@ See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix i
 ## Squad
 
 Multi-agent dev via [Squad by Brady Gaster](https://github.com/bradygaster/squad). Team in `.squad/team.md`. Routing in `.squad/routing.md`. Open `squad`-labeled issues are the live backlog.
+
+## Live smoke workflow
+
+Trigger `.github/workflows/smoke-test.yml` weekly by schedule or manually with `workflow_dispatch` to run a live smoke pass for the hello-world sample.
+
+- Auth uses GitHub OIDC with `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` secrets.
+- The workflow skips execution gracefully when secrets are missing, for example on forks.
+- It captures baseline and AGC latency samples, asserts HTTP 200 plus expected body text, uploads artifacts, and then deletes the smoke resource group.
 
 ## License
 
