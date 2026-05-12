@@ -11,10 +11,13 @@ PowerShell module for migrating AKS Automatic clusters from ingress-nginx to Gat
 ### Install ingress2gateway
 
 ```shell
+# Pin to GA baseline (v1.0.0, released 2026-03-20):
 go install sigs.k8s.io/ingress2gateway@v1.0.0
+# Or use the latest (v1.1.0 as of 2026-04):
+go install sigs.k8s.io/ingress2gateway@latest
 ```
 
-Or download from https://github.com/kubernetes-sigs/ingress2gateway/releases
+Or download from https://github.com/kubernetes-sigs/ingress2gateway/releases (v1.0.0 GA tag: <https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.0.0>; v1.1.0 latest: <https://github.com/kubernetes-sigs/ingress2gateway/releases/tag/v1.1.0>).
 
 ## Usage
 

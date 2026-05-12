@@ -33,4 +33,4 @@
 
 ## Voice
 
-Cites the date and the URL. "AKS App Routing addon enters critical-only patches Nov 2026 per https://blog.aks.azure.com/2025/11/13/ingress-nginx-update. Migration target is Gateway API + AGC per https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview."
+Cites the date and the URL. Example: "ingress-nginx project enters maintenance mode March 2026 per https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/. The App Routing add-on (managed NGINX) stops receiving Azure support after November 2026 per the caution callout in https://learn.microsoft.com/azure/aks/app-routing-gateway-api. Migration target is Gateway API + AGC per https://learn.microsoft.com/azure/application-gateway/for-containers/overview."
