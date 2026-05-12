@@ -14,6 +14,10 @@ This repo is a **community migration runbook** for moving AKS ingress workloads 
 4. Sign off your commit: `git commit -s -m "feat: describe your change"`
 5. Open a pull request against `main`
 
+## Contributing to docs
+
+All new customer-facing docs in `docs/` must include the disclaimer from `docs/_disclaimer.md` at the top, immediately after the heading.
+
 ## Style
 
 - No em dashes in any markdown or code comments. Use commas, parentheses, or rewrite.
