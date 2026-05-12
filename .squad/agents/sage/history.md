@@ -43,6 +43,10 @@ Activity log for Sage (Research and Runbook Author).
 
 ## Learnings
 
+### 2026-05-12: PRs shipped and spawn manifest closed
+
+Voice sweep PR #49 merged. Deck redesign PR #50 merged. PR #51 logged learnings.
+
 ### 2026-05-12: Project voice profile established
 
 **Scope:** Pending voice rewrite covers 18 docs + 3 READMEs (full list in `.squad/decisions.md`).
