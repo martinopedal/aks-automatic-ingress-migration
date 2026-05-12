@@ -1,111 +1,598 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKS Automatic: ingress-nginx → AGC Migration</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
-    <style>
-        .reveal h1 { font-size: 2.5em; text-transform: none; }
-        .reveal h2 { font-size: 2em; text-transform: none; }
-        .reveal h3 { font-size: 1.5em; text-transform: none; }
-        .reveal pre { font-size: 0.5em; }
-        .reveal code { font-family: 'Courier New', monospace; }
-        .reveal .timeline { font-size: 0.9em; line-height: 1.6; }
-        .reveal .citation { font-size: 0.6em; color: #888; margin-top: 1em; }
-        .reveal .warning { color: #ff6b6b; font-weight: bold; }
-        .reveal .preview { color: #ffd93d; font-weight: bold; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AKS Automatic: ingress-nginx to AGC migration</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/atom-one-dark.min.css">
+<style>
+:root {
+  --bg: #1A1F24;
+  --bg-elev: #232930;
+  --surface: #2A323B;
+  --text: #E8E6E3;
+  --text-muted: #8A9199;
+  --text-dim: #5C6470;
+  --rule: #3A4149;
+  --accent: #FFB400;
+  --accent-soft: #F2A900;
+  --accent-dim: #66491D;
+  --positive: #7FB069;
+  --negative: #E55A4A;
+  --code-bg: #15191E;
+  --font-head: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+}
+
+html, body { background: var(--bg); }
+
+.reveal {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 26px;
+  color: var(--text);
+}
+
+.reveal .slides { text-align: left; }
+
+.reveal .slides > section,
+.reveal .slides > section > section {
+  padding: 56px 72px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0 0 22px 0;
+}
+
+.reveal h1 { font-size: 2.6em; }
+.reveal h2 { font-size: 1.8em; }
+.reveal h3 { font-size: 1.35em; }
+.reveal h4 {
+  font-size: 1.05em;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.reveal p { line-height: 1.5; margin: 0 0 14px 0; }
+
+.reveal ul, .reveal ol {
+  line-height: 1.5;
+  margin-left: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reveal li {
+  padding: 5px 0 5px 22px;
+  position: relative;
+}
+
+.reveal ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.95em;
+  width: 10px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.7;
+}
+
+.reveal ol > li::before { content: ""; }
+
+.reveal a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent-dim);
+}
+.reveal a:hover { border-bottom-color: var(--accent); }
+
+.reveal pre {
+  background: var(--code-bg);
+  border-left: 2px solid var(--accent);
+  border-radius: 0;
+  font-size: 0.5em;
+  padding: 18px 22px;
+  box-shadow: none;
+  margin: 16px 0;
+  width: auto;
+}
+.reveal pre code {
+  font-family: var(--font-mono);
+  font-size: 1em;
+  padding: 0;
+  max-height: none;
+  background: transparent;
+}
+.reveal :not(pre) > code {
+  background: rgba(255,180,0,0.1);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--accent);
+  font-size: 0.82em;
+  font-family: var(--font-mono);
+}
+
+.citation {
+  font-family: var(--font-body);
+  font-size: 0.55em;
+  color: var(--text-muted);
+  margin-top: 24px;
+  line-height: 1.5;
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+}
+.citation a {
+  color: var(--text-muted);
+  border-bottom-color: var(--text-dim);
+}
+
+.warn { color: var(--accent); font-weight: 600; }
+.preview {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.7em;
+  padding: 2px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.bad { color: var(--negative); }
+.good { color: var(--positive); }
+
+/* MOTIF 1: section chip top-left, on every slide except cover */
+.chip {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  z-index: 10;
+}
+.chip .chip-num {
+  background: var(--accent);
+  color: var(--bg);
+  padding: 2px 7px;
+  margin-right: 8px;
+  border-radius: 1px;
+}
+.chip .chip-name { color: var(--text-muted); }
+
+/* MOTIF 2: thin amber rule on the right edge of every slide */
+.reveal .slides section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+.hero .eyebrow {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+.hero h1 { font-size: 3.0em; line-height: 1.05; margin-bottom: 16px; }
+.hero .lede { font-size: 1.05em; color: var(--text-muted); max-width: 80%; }
+.hero .stamp {
+  margin-top: 48px;
+  font-size: 0.65em;
+  color: var(--text-dim);
+  display: flex;
+  gap: 32px;
+  letter-spacing: 0.05em;
+}
+
+.stat-row { display: flex; gap: 56px; margin-top: 24px; }
+.stat { flex: 1; min-width: 0; }
+.stat .num {
+  font-family: var(--font-head);
+  font-size: 4.0em;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.stat .label {
+  font-family: var(--font-body);
+  font-size: 0.68em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 12px;
+  font-weight: 600;
+}
+.stat .detail {
+  color: var(--text);
+  font-size: 0.78em;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.cols.left-heavy { grid-template-columns: 1.5fr 1fr; }
+.cols.right-heavy { grid-template-columns: 1fr 1.5fr; }
+.cols .col { min-width: 0; }
+.col-head {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+.card {
+  background: var(--bg-elev);
+  border-left: 2px solid var(--accent);
+  padding: 18px 22px;
+}
+.card h4 {
+  color: var(--text);
+  font-family: var(--font-head);
+  font-size: 1em;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.card p {
+  font-size: 0.78em;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.divider {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+.divider .sect-num {
+  font-family: var(--font-head);
+  font-size: 9em;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.divider .sect-title {
+  font-family: var(--font-head);
+  font-size: 2.2em;
+  font-weight: 700;
+  margin-top: 16px;
+  color: var(--text);
+  line-height: 1.15;
+}
+.divider .sect-lede {
+  font-size: 0.95em;
+  color: var(--text-muted);
+  margin-top: 16px;
+  max-width: 70%;
+}
+
+.phase-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin: 28px 0 24px;
+  position: relative;
+}
+.phase-line::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: var(--rule);
+  z-index: 0;
+}
+.phase-node {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  flex: 1;
+  padding: 0 4px;
+}
+.phase-node .dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.phase-node .label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+}
+.phase-node.gate .dot {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.phase-node.cut .dot {
+  background: var(--negative);
+  color: var(--bg);
+  border-color: var(--negative);
+}
+
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78em;
+  margin-top: 14px;
+}
+.cmp-table th, .cmp-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.cmp-table th {
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom-color: var(--accent);
+}
+.cmp-table td.status {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  width: 160px;
+  white-space: nowrap;
+}
+
+.diagram {
+  background: var(--bg-elev);
+  padding: 22px;
+  margin-top: 12px;
+}
+.diagram svg { width: 100%; height: auto; display: block; }
+
+.callout {
+  background: var(--bg-elev);
+  border-left: 3px solid var(--accent);
+  padding: 22px 26px;
+  margin: 14px 0 18px;
+}
+.callout .ribbon {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.callout p { margin: 0; line-height: 1.5; }
+
+.note {
+  color: var(--text-muted);
+  font-size: 0.75em;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.numbered { padding-left: 0; }
+.numbered li { padding-left: 42px; padding-top: 8px; padding-bottom: 8px; }
+.numbered li::before { display: none; }
+.numbered li .n {
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  font-family: var(--font-head);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1em;
+  letter-spacing: -0.02em;
+}
+
+.reveal .slide-number {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  letter-spacing: 0.1em;
+  bottom: 18px;
+  right: 24px;
+  padding: 0;
+}
+.reveal .progress { color: var(--accent); height: 2px; }
+.reveal .controls { color: var(--text-muted); }
+
+@media print {
+  .reveal pre { font-size: 0.45em; }
+}
+</style>
 </head>
 <body>
-    <div class="reveal">
-        <div class="slides">
+<div class="reveal">
+<div class="slides">
 
-<!-- SECTION 1: THE CLOCK IS TICKING -->
-<section>
-    <section>
-        <h1>AKS Automatic</h1>
-        <h2>ingress-nginx → AGC Migration</h2>
-        <p>Before the clock runs out</p>
-        <aside class="notes">
-            This deck walks through the ingress-nginx retirement timeline, the Gateway API mental model shift, where Application Gateway for Containers fits in Azure Landing Zone Corp, and a 10-phase runbook to migrate before the November 2026 deadline. Citations are provided for all retirement dates and technical claims.
-        </aside>
-    </section>
+<!-- ===== SECTION 1: DEADLINE ===== -->
+<section data-section="01 / Deadline">
 
-    <section>
-        <h2>Two collision dates</h2>
-        <div class="timeline">
-            <p><strong class="warning">March 2026:</strong> Community ingress-nginx project retires</p>
-            <p><strong class="warning">November 2026:</strong> Microsoft App Routing addon drops to critical-only patches</p>
+  <section data-nochip>
+    <div class="hero">
+      <div class="eyebrow">Migration deck, May 2026</div>
+      <h1>Get off ingress-nginx<br>before November 2026.</h1>
+      <p class="lede">AKS Automatic clusters, Gateway API, and Application Gateway for Containers in ALZ Corp.</p>
+      <div class="stamp">
+        <span>Sage / Research and runbook</span>
+        <span>aks-automatic-ingress-migration</span>
+      </div>
+    </div>
+    <aside class="notes">This deck walks the ingress-nginx retirement timeline, the Gateway API mental model shift, where Application Gateway for Containers fits in Azure Landing Zone Corp, and a 10-phase runbook to migrate before the November 2026 deadline. Citations are inline for every retirement date and technical claim.</aside>
+  </section>
+
+  <section>
+    <h2>Two collision dates, eighteen months apart.</h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="num">Mar 2026</div>
+        <div class="label">Community ingress-nginx retires</div>
+        <div class="detail">Project ends. No more upstream releases.</div>
+      </div>
+      <div class="stat">
+        <div class="num">Nov 2026</div>
+        <div class="label">App Routing addon, critical-only</div>
+        <div class="detail">No feature work. Critical CVEs only.</div>
+      </div>
+    </div>
+    <p class="citation">
+      <a href="https://github.com/kubernetes/ingress-nginx/issues/10977">kubernetes/ingress-nginx#10977</a>
+      &middot; <a href="https://learn.microsoft.com/azure/aks/app-routing">MS Docs: App Routing addon</a>
+    </p>
+    <aside class="notes">The community ingress-nginx project announced retirement for March 2026. Microsoft's App Routing addon, which wraps ingress-nginx, will stop receiving feature updates and drop to critical-only patches in November 2026. After that date, no bug fixes, no security patches except critical CVEs. Staying on ingress-nginx past Nov 2026 is operational risk you cannot offset with budget.</aside>
+  </section>
+
+  <section>
+    <h2>The planning window is 3 to 6 months.</h2>
+    <div class="cols left-heavy">
+      <div class="col">
+        <ul>
+          <li>AGC private cluster support is still <span class="preview">Preview</span>. Hard prerequisite for ALZ Corp.</li>
+          <li>ingress2gateway v1.0 GA is the translator. It does not handle every annotation.</li>
+          <li>ALZ Corp topology needs private cluster API, delegated subnets, Workload Identity wiring.</li>
+          <li>SRE teams need lead time on the Gateway API mental model and Helm chart layout.</li>
+        </ul>
+      </div>
+      <div class="col">
+        <div class="stat">
+          <div class="num">3-6</div>
+          <div class="label">Months end to end</div>
+          <div class="detail">From inventory to ingress-nginx decommission.</div>
         </div>
-        <p class="citation">
-            Source: <a href="https://github.com/kubernetes/ingress-nginx/issues/10977">kubernetes/ingress-nginx#10977</a><br>
-            Source: <a href="https://learn.microsoft.com/azure/aks/app-routing">MS Docs: App Routing addon retirement</a>
-        </p>
-        <aside class="notes">
-            The community ingress-nginx controller project announced retirement for March 2026. Microsoft's App Routing addon, which wraps ingress-nginx, will stop receiving feature updates and drop to critical-only patches in November 2026. After that date, no bug fixes, no security patches except critical CVEs. You cannot stay on ingress-nginx indefinitely.
-        </aside>
-    </section>
+      </div>
+    </div>
+    <aside class="notes">ALZ Corp environments need hub-spoke topology, Azure Firewall egress, private cluster APIs, and Workload Identity. AGC private cluster support remained in preview as of April 22 2026 with no published GA date. You need time to validate the full stack, run failover scenarios, and train the SRE team on Gateway API.</aside>
+  </section>
 
-    <section>
-        <h2>Why now?</h2>
-        <ul>
-            <li>Migration planning requires 3-6 months for ALZ Corp environments</li>
-            <li>AGC private cluster support is still <span class="preview">PREVIEW</span> (critical prerequisite)</li>
-            <li>Translation tooling (ingress2gateway) is GA, but annotation gaps exist</li>
-            <li>Runbook testing needs production-like network topology</li>
-        </ul>
-        <aside class="notes">
-            ALZ Corp environments need hub-spoke topology, Azure Firewall egress, private cluster APIs, and Workload Identity. This is not a weekend project. AGC private cluster support remains in preview as of April 2026, with no published GA date. You need time to validate the full stack, test failover scenarios, and train your SRE team on Gateway API concepts.
-        </aside>
-    </section>
+  <section>
+    <h2>What you migrate to.</h2>
+    <div class="grid-2x2">
+      <div class="card">
+        <h4>Gateway API v1</h4>
+        <p>Kubernetes SIG Network standard, vendor-neutral, GA October 2023.</p>
+      </div>
+      <div class="card">
+        <h4>Application Gateway for Containers</h4>
+        <p>Microsoft managed ingress. Implements Gateway API. Provisions an Azure resource per Gateway.</p>
+      </div>
+      <div class="card">
+        <h4>AKS Automatic</h4>
+        <p>Opinionated cluster profile. Managed addons, Karpenter, deletion locks.</p>
+      </div>
+      <div class="card">
+        <h4>ingress2gateway v1.0</h4>
+        <p>Official translator from kubernetes-sigs. Run, then review the diff.</p>
+      </div>
+    </div>
+    <p class="citation">
+      <a href="https://gateway-api.sigs.k8s.io/">Gateway API spec</a>
+      &middot; <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/overview">MS Docs: AGC overview</a>
+    </p>
+    <aside class="notes">Gateway API is the SIG Network standard for ingress and service mesh routing, vendor-neutral, GA since October 2023. AGC is Microsoft's managed ingress controller that implements it. AKS Automatic is the opinionated cluster profile, but you can run AGC on standard AKS too. ingress2gateway is the official translator, version 1.0 GA.</aside>
+  </section>
 
-    <section>
-        <h2>Migration target</h2>
+  <section>
+    <h2>What this repo gives you.</h2>
+    <div class="cols left-heavy">
+      <div class="col">
         <ul>
-            <li><strong>Gateway API</strong> (Kubernetes standard, vendor-neutral)</li>
-            <li><strong>Application Gateway for Containers</strong> (Microsoft managed ingress)</li>
-            <li><strong>AKS Automatic</strong> (opinionated cluster profile)</li>
+          <li>10-phase runbook tuned for ALZ Corp environments</li>
+          <li>Terraform and Bicep modules with enforced output parity</li>
+          <li>Helm chart for the AGC controller and Gateway API CRDs</li>
+          <li>Translation guidance built on ingress2gateway v1.0 GA</li>
+          <li>PowerShell scripts for assessment and dry-run cutover</li>
         </ul>
-        <p class="citation">
-            Source: <a href="https://gateway-api.sigs.k8s.io/">Gateway API official site</a><br>
-            Source: <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/overview">MS Docs: AGC overview</a>
-        </p>
-        <aside class="notes">
-            Gateway API is the Kubernetes SIG Network standard for ingress and service mesh routing. It is vendor-neutral and GA since October 2023. AGC is Microsoft's managed ingress controller that implements Gateway API. AKS Automatic is the opinionated cluster profile that simplifies addon lifecycle, but you can run AGC on standard AKS clusters as well.
-        </aside>
-    </section>
+      </div>
+      <div class="col">
+        <div class="stat">
+          <div class="num">10</div>
+          <div class="label">Runbook phases</div>
+          <div class="detail">Prerequisites through decommission. Each phase rolls back on its own.</div>
+        </div>
+      </div>
+    </div>
+    <aside class="notes">This repo is an orchestration layer per ADR-001. It does not reinvent translation. It delegates to ingress2gateway and focuses on the ALZ Corp end-to-end story: network topology, identity, IaC parity, runbook phases, and validation gates.</aside>
+  </section>
 
-    <section>
-        <h2>What this repo provides</h2>
-        <ul>
-            <li>10-phase runbook for ALZ Corp environments</li>
-            <li>Terraform + Bicep IaC with enforced output parity</li>
-            <li>Helm charts for AGC controller + Gateway API CRDs</li>
-            <li>Translation guidance (uses ingress2gateway v1.0 GA)</li>
-            <li>Validation scripts (dry-run, breaking-change detection)</li>
-        </ul>
-        <aside class="notes">
-            This repository is an orchestration layer. It does not reinvent translation tools. Instead, it delegates to ingress2gateway (the official Kubernetes SIG Network translator) and focuses on the ALZ Corp end-to-end story: network topology, identity, IaC, runbook phases, and validation gates.
-        </aside>
-    </section>
 </section>
 
-<!-- SECTION 2: WHAT CHANGES -->
-<section>
-    <section>
-        <h2>What changes?</h2>
-        <p>The mental model</p>
-        <aside class="notes">
-            Ingress resources are monolithic. Gateway API splits the ingress concern into three resources with role separation: GatewayClass (infra owner), Gateway (cluster operator), and HTTPRoute (app developer). This separation enables better RBAC, multi-tenant routing, and clearer ownership boundaries.
-        </aside>
-    </section>
+<!-- ===== SECTION 2: MENTAL MODEL ===== -->
+<section data-section="02 / Model">
 
-    <section>
-        <h3>Ingress: one resource type</h3>
-        <pre><code class="yaml">apiVersion: networking.k8s.io/v1
+  <section>
+    <div class="divider">
+      <div class="sect-num">02</div>
+      <div class="sect-title">Ingress is one box.<br>Gateway API is three.</div>
+      <p class="sect-lede">Role separation. Cross-namespace by default. The mental model shifts before any YAML does.</p>
+    </div>
+    <aside class="notes">Ingress resources are monolithic. Gateway API splits the concern into three resources with role separation: GatewayClass for the infra owner, Gateway for the cluster operator, HTTPRoute for the app developer. Better RBAC, clearer ownership boundaries.</aside>
+  </section>
+
+  <section>
+    <h3>Ingress, one resource, every concern.</h3>
+    <pre><code class="language-yaml" data-trim>
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: example
@@ -123,389 +610,562 @@ spec:
           service:
             name: api-service
             port:
-              number: 8080</code></pre>
-        <aside class="notes">
-            Ingress resources mix infrastructure decisions (TLS termination, load balancer flavor) with application routing (host, path, backend service). Annotations are vendor-specific and not portable. The ingressClassName field was added in Kubernetes 1.18 to allow multiple ingress controllers in one cluster, but it does not solve the role separation problem.
-        </aside>
-    </section>
+              number: 8080
+    </code></pre>
+    <p class="note">Annotations encode infra. Vendor coupling. No role separation.</p>
+    <aside class="notes">Ingress mixes infrastructure decisions (TLS, load balancer flavor) with application routing (host, path, backend). Annotations are vendor-specific and not portable. ingressClassName arrived in Kubernetes 1.18 to allow multiple controllers per cluster, but it does not solve role separation.</aside>
+  </section>
 
-    <section>
-        <h3>Gateway API: three resources, role separation</h3>
-        <pre><code class="yaml">apiVersion: gateway.networking.k8s.io/v1
+  <section>
+    <h3>Gateway API, three resources, three owners.</h3>
+    <pre><code class="language-yaml" data-trim>
+apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
-metadata:
-  name: azure-alb
+metadata: { name: azure-alb }
 spec:
   controllerName: azure.com/alb-controller
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
-metadata:
-  name: example-gateway
-  namespace: infra
+metadata: { name: example-gateway, namespace: infra }
 spec:
   gatewayClassName: azure-alb
   listeners:
-  - name: http
-    protocol: HTTP
-    port: 80
+  - { name: http, protocol: HTTP, port: 80 }
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
-metadata:
-  name: api-route
-  namespace: app
+metadata: { name: api-route, namespace: app }
 spec:
   parentRefs:
-  - name: example-gateway
-    namespace: infra
-  hostnames:
-  - example.com
+  - { name: example-gateway, namespace: infra }
+  hostnames: [example.com]
   rules:
   - matches:
-    - path:
-        type: PathPrefix
-        value: /api
+    - path: { type: PathPrefix, value: /api }
     backendRefs:
-    - name: api-service
-      port: 8080</code></pre>
-        <aside class="notes">
-            GatewayClass is managed by the infrastructure owner (AGC controller). Gateway is managed by the cluster operator (SRE team) and defines listeners and TLS policy. HTTPRoute is managed by the app developer and defines routing rules. This separation allows different teams to own their slice without stepping on each other. HTTPRoute can reference a Gateway in a different namespace (cross-namespace routing).
-        </aside>
-    </section>
+    - { name: api-service, port: 8080 }
+    </code></pre>
+    <aside class="notes">GatewayClass is the infra owner's resource (AGC controller). Gateway is the cluster operator's resource (SRE team) and defines listeners and TLS. HTTPRoute is the app team's resource and defines routing. HTTPRoute can reference a Gateway in another namespace. Cross-namespace routing as a first-class feature.</aside>
+  </section>
 
-    <section>
-        <h3>Annotation translation</h3>
-        <ul>
-            <li>Most ingress-nginx annotations do not have Gateway API equivalents</li>
-            <li>ingress2gateway v1.0 GA translates common patterns</li>
-            <li>You must manually review vendor-specific annotations</li>
-        </ul>
-        <p class="citation">
-            Source: <a href="https://github.com/kubernetes-sigs/ingress2gateway">kubernetes-sigs/ingress2gateway</a>
-        </p>
-        <aside class="notes">
-            ingress-nginx has over 100 annotations. Gateway API favors first-class fields over annotations. ingress2gateway translates rewrite-target, CORS, rate limiting, and a few others, but many annotations (auth, custom headers, Lua snippets) have no equivalent. You must audit your Ingress manifests, identify which annotations are in use, and determine if AGC supports the feature natively or if you need to implement it at the application layer.
-        </aside>
-    </section>
+  <section>
+    <h3>Annotation translation has a ceiling.</h3>
+    <table class="cmp-table">
+      <thead>
+        <tr><th>Pattern</th><th>ingress2gateway</th><th>AGC native</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Path rewrite</td><td class="status good">&#10003; translates</td><td class="status good">&#10003;</td></tr>
+        <tr><td>CORS basic</td><td class="status good">&#10003; translates</td><td class="status good">&#10003;</td></tr>
+        <tr><td>Rate limit, basic</td><td class="status good">&#10003; translates</td><td class="status good">&#10003;</td></tr>
+        <tr><td>Custom auth annotations</td><td class="status bad">&#10007; no map</td><td class="status bad">&#10007; use Workload Identity</td></tr>
+        <tr><td>Lua / configuration-snippet</td><td class="status bad">&#10007; no map</td><td class="status bad">&#10007; not supported</td></tr>
+        <tr><td>Canary by header / weight</td><td class="status bad">&#10007; partial</td><td class="status">use Argo Rollouts</td></tr>
+      </tbody>
+    </table>
+    <p class="citation">
+      <a href="https://github.com/kubernetes-sigs/ingress2gateway">kubernetes-sigs/ingress2gateway v1.0</a>
+    </p>
+    <aside class="notes">ingress-nginx ships with over 100 annotations. Gateway API prefers first-class fields. ingress2gateway translates rewrite-target, CORS, basic rate limiting, and a few others. Many annotations (auth, custom headers, Lua snippets) have no equivalent. Audit your manifests, then decide per annotation: drop it, move to app, or block on a workaround.</aside>
+  </section>
 
-    <section>
-        <h3>Known gaps</h3>
-        <ul>
-            <li>Lua snippets (not supported by AGC)</li>
-            <li>Custom auth annotations (use Azure AD pod-managed identity instead)</li>
-            <li>Advanced rate limiting (AGC supports basic rate limiting only)</li>
-            <li>Canary deployments (use Argo Rollouts or Flagger with Gateway API)</li>
-        </ul>
-        <aside class="notes">
-            ingress-nginx allows arbitrary Lua code in configuration-snippet annotations. AGC does not support this. If you rely on Lua for header manipulation or custom logic, you must move that logic into your application or use a sidecar proxy. For authentication, prefer Azure AD Workload Identity and application-layer token validation. For canary deployments, use progressive delivery tools like Argo Rollouts or Flagger, which have Gateway API support.
-        </aside>
-    </section>
+  <section>
+    <h3>Four things that don't translate.</h3>
+    <table class="cmp-table">
+      <tbody>
+        <tr>
+          <td class="status bad">&#10007; Lua</td>
+          <td>configuration-snippet annotations. AGC has no Lua. Move logic into the app or a sidecar.</td>
+        </tr>
+        <tr>
+          <td class="status bad">&#10007; Custom auth</td>
+          <td>nginx auth-url, auth-snippet. Replace with Workload Identity and app-layer token validation.</td>
+        </tr>
+        <tr>
+          <td class="status bad">&#10007; Advanced rate limit</td>
+          <td>Per-IP, per-path, leaky bucket. AGC supports basic rate limiting only.</td>
+        </tr>
+        <tr>
+          <td class="status bad">&#10007; Canary</td>
+          <td>nginx.ingress.kubernetes.io/canary. Use Argo Rollouts or Flagger with Gateway API support.</td>
+        </tr>
+      </tbody>
+    </table>
+    <aside class="notes">If you rely on Lua for header manipulation or custom logic, move that into the app or use a sidecar proxy. For authentication, prefer Workload Identity with app-layer token validation. For canary, use progressive delivery tools that already integrate with Gateway API: Argo Rollouts, Flagger.</aside>
+  </section>
 
-    <section>
-        <h3>HTTPS and TLS</h3>
+  <section>
+    <h3>TLS, two ways.</h3>
+    <div class="cols">
+      <div class="col">
+        <div class="col-head">Ingress</div>
         <ul>
-            <li>Ingress: TLS block with Secret reference</li>
-            <li>Gateway API: TLS mode on Gateway listener, Secret reference in same namespace</li>
-            <li>AGC supports TLS termination with Azure Key Vault integration</li>
+          <li>tls block on the Ingress resource</li>
+          <li>secretName references a kube Secret</li>
+          <li>Same namespace as the Ingress</li>
         </ul>
-        <p class="citation">
-            Source: <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/how-to-ssl-offloading-gateway-api">MS Docs: AGC SSL offloading</a>
-        </p>
-        <aside class="notes">
-            In Ingress, you define a TLS block with a secretName pointing to a Kubernetes Secret containing the certificate. In Gateway API, you define a TLS mode on the Gateway listener (Terminate or Passthrough) and reference the Secret in the same namespace as the Gateway. AGC integrates with Azure Key Vault, so you can use the Key Vault CSI driver to sync certificates into Kubernetes Secrets automatically.
-        </aside>
-    </section>
+      </div>
+      <div class="col">
+        <div class="col-head">Gateway API</div>
+        <ul>
+          <li>TLS on the Gateway listener</li>
+          <li>Mode Terminate or Passthrough</li>
+          <li>Secret in the Gateway namespace</li>
+          <li>AGC pulls certs via Key Vault CSI</li>
+        </ul>
+      </div>
+    </div>
+    <p class="citation">
+      <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/how-to-ssl-offloading-gateway-api">MS Docs: AGC SSL offloading</a>
+    </p>
+    <aside class="notes">In Ingress, you define a tls block with a secretName pointing to a Kubernetes Secret. In Gateway API, TLS configuration lives on the Gateway listener with mode Terminate or Passthrough. The Secret must be in the same namespace as the Gateway. AGC integrates with Azure Key Vault, so the Key Vault CSI driver can sync certificates into Secrets automatically.</aside>
+  </section>
 
-    <section>
-        <h3>Readiness checklist</h3>
-        <ul>
-            <li>Audit all Ingress resources and annotations</li>
-            <li>Run ingress2gateway and review the output</li>
-            <li>Identify gaps (Lua, custom auth, advanced rate limiting)</li>
-            <li>Plan for app-layer changes or drop unsupported features</li>
-            <li>Test in a non-production cluster first</li>
-        </ul>
-        <aside class="notes">
-            Do not start the migration until you have a complete inventory of your Ingress resources. Use kubectl get ingress --all-namespaces -o yaml to export everything. Run ingress2gateway to see what translates cleanly. For each annotation that does not translate, decide: can we drop it, can we implement it at the app layer, or is it a blocker? Document your decisions in an ADR or runbook addendum.
-        </aside>
-    </section>
+  <section>
+    <h3>Readiness checklist before you cut.</h3>
+    <ol class="numbered">
+      <li><span class="n">01.</span> Export every Ingress: <code>kubectl get ingress -A -o yaml</code></li>
+      <li><span class="n">02.</span> Run ingress2gateway and read the generated HTTPRoutes</li>
+      <li><span class="n">03.</span> List every annotation that did not translate</li>
+      <li><span class="n">04.</span> For each annotation, decide drop, move to app, or block</li>
+      <li><span class="n">05.</span> Apply HTTPRoutes to a non-prod cluster first</li>
+    </ol>
+    <aside class="notes">Do not start the migration without a complete inventory. Use kubectl get ingress -A -o yaml to export everything. Run ingress2gateway and review the diff. For each annotation that did not translate, document the decision in an ADR or runbook addendum.</aside>
+  </section>
+
 </section>
 
-<!-- SECTION 3: WHERE AGC LIVES IN ALZ CORP -->
-<section>
-    <section>
-        <h2>Where AGC lives in ALZ Corp</h2>
-        <aside class="notes">
-            Azure Landing Zone Corp is the enterprise network topology that most large organizations use. It includes a central hub VNet with Azure Firewall for egress, spoke VNets for workloads, no public IPs on compute, and private endpoints for PaaS services. AGC must fit into this topology without breaking the security model.
-        </aside>
-    </section>
+<!-- ===== SECTION 3: ALZ CORP ===== -->
+<section data-section="03 / ALZ Corp">
 
-    <section>
-        <h3>ALZ Corp shape</h3>
-        <ul>
-            <li>Hub VNet: Azure Firewall, VPN Gateway, Bastion</li>
-            <li>Spoke VNet: AKS cluster, delegated subnet for AGC</li>
-            <li>No public IPs on AKS nodes</li>
-            <li>Private cluster API server</li>
-            <li>Egress via Azure Firewall UDR</li>
-        </ul>
-        <p class="citation">
-            Source: <a href="https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/">MS Docs: Azure Landing Zones</a>
-        </p>
-        <aside class="notes">
-            In ALZ Corp, the hub VNet is managed by the central networking team. The spoke VNet is managed by the workload team. AKS clusters run in spoke VNets with no public IPs. The API server is private (accessible only via VPN or ExpressRoute). All egress traffic from AKS pods is routed to the Azure Firewall in the hub via a user-defined route. AGC must work within this locked-down topology.
-        </aside>
-    </section>
+  <section>
+    <div class="divider">
+      <div class="sect-num">03</div>
+      <div class="sect-title">ALZ Corp is the constraint.</div>
+      <p class="sect-lede">Private API, no public IPs, central firewall egress. AGC has to fit, not the other way around.</p>
+    </div>
+    <aside class="notes">Azure Landing Zone Corp is the enterprise topology used by most large orgs. Hub VNet with Azure Firewall, spoke VNets for workloads, no public IPs on compute, private endpoints for PaaS. AGC must fit into this without breaking the security model.</aside>
+  </section>
 
-    <section>
-        <h3>AGC placement</h3>
-        <ul>
-            <li>AGC requires a delegated subnet in the spoke VNet</li>
-            <li>AGC frontend can be internal (private IP) or external (public IP)</li>
-            <li>For ALZ Corp, use internal frontend</li>
-            <li>Expose AGC via Front Door or Application Gateway in hub</li>
-        </ul>
-        <aside class="notes">
-            AGC needs a subnet with delegation to Microsoft.ServiceNetworking/trafficControllers. This subnet must have enough IP space for the AGC control plane and data plane instances (recommend /24 or larger). For ALZ Corp, configure AGC with an internal frontend (private IP). Then, place a public-facing Azure Front Door or Application Gateway in the hub VNet, and configure it to forward traffic to the AGC internal IP. This keeps the AKS nodes and AGC instances fully private.
-        </aside>
-    </section>
-
-    <section>
-        <h3>Architecture diagram</h3>
-        <pre><code>Internet → Front Door (hub) → Azure Firewall (hub) → AGC (spoke) → AKS pods (spoke)</code></pre>
-        <ul>
-            <li>Front Door: DDoS protection, WAF, global load balancing</li>
-            <li>Azure Firewall: egress filtering, threat intelligence</li>
-            <li>AGC: ingress controller, TLS termination, routing</li>
-            <li>AKS pods: application workloads</li>
-        </ul>
-        <aside class="notes">
-            Traffic enters via Front Door in the hub VNet. Front Door terminates TLS and performs WAF inspection. It forwards requests to AGC in the spoke VNet. AGC terminates TLS again (if configured) and routes to the correct AKS pod. Return traffic follows the reverse path. Egress traffic from AKS pods goes via Azure Firewall UDR. This design satisfies ALZ Corp security requirements: no public IPs on AKS, centralized egress control, defense in depth.
-        </aside>
-    </section>
-
-    <section>
-        <h3>Workload Identity</h3>
-        <ul>
-            <li>AGC controller pod needs Azure RBAC permissions</li>
-            <li>Use Workload Identity (federated credentials)</li>
-            <li>Never use service principal secrets in the cluster</li>
-        </ul>
-        <p class="citation">
-            Source: <a href="https://learn.microsoft.com/azure/aks/workload-identity-overview">MS Docs: Workload Identity overview</a>
-        </p>
-        <aside class="notes">
-            The AGC controller pod must create and update Azure resources (Application Gateway for Containers instances, frontend configurations, routing rules). Instead of storing a service principal secret in a Kubernetes Secret, use Workload Identity. The AKS cluster has an OIDC issuer. You create a federated credential on a managed identity, bind it to a Kubernetes ServiceAccount, and project the token into the AGC controller pod. The pod exchanges the token for an Azure AD token at runtime. This eliminates secret sprawl and aligns with zero-trust principles.
-        </aside>
-    </section>
-
-    <section>
-        <h3><span class="preview">PREVIEW</span> reality check</h3>
-        <p class="warning">AGC private cluster support is still in PREVIEW as of April 22, 2026.</p>
-        <ul>
-            <li>No published GA date</li>
-            <li>Production use at your own risk</li>
-            <li>This is a hard prerequisite for ALZ Corp deployments</li>
-        </ul>
-        <p class="citation">
-            Source: <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/private-cluster-support">MS Docs: AGC private cluster support (preview)</a><br>
-            Verified: April 22, 2026 (ADR-003)
-        </p>
-        <aside class="notes">
-            This is the biggest blocker. ALZ Corp requires private cluster API servers. AGC private cluster support was announced in preview, but as of April 22, 2026, it has not reached GA. Microsoft has not published a GA date. The runbook Phase 00 explicitly documents this as a prerequisite. If you cannot wait for GA, you must accept preview SLA terms (no production support guarantee, breaking changes possible). Document this risk in your change advisory board submission.
-        </aside>
-    </section>
-
-    <section>
-        <h3>IaC parity</h3>
-        <ul>
-            <li>Every example ships in Terraform and Bicep</li>
-            <li>Output schema enforced via outputs.schema.json</li>
-            <li>Wrapper modules can consume either</li>
-        </ul>
-        <p class="citation">
-            Source: ADR-002 (Bicep-Terraform parity contract)
-        </p>
-        <aside class="notes">
-            Some teams use Terraform, some teams use Bicep. This repo provides both. ADR-002 defines a contract: Terraform modules and Bicep modules must produce the same outputs (same names, same types, same semantics). We validate this with outputs.schema.json files. If you write a wrapper module that calls these modules, you can swap between Terraform and Bicep without changing the wrapper. This is critical for enterprises with mixed IaC tooling.
-        </aside>
-    </section>
-</section>
-
-<!-- SECTION 4: THE RUNBOOK -->
-<section>
-    <section>
-        <h2>The runbook</h2>
-        <p>10 phases from prerequisites to decommission</p>
-        <aside class="notes">
-            The runbook is the centerpiece of this repository. It breaks the migration into 10 phases with clear gates, validation scripts, and rollback procedures. Each phase has a README with step-by-step instructions, expected outcomes, and troubleshooting tips. Do not skip phases. Do not merge phases. The order matters.
-        </aside>
-    </section>
-
-    <section>
-        <h3>Phase timeline</h3>
-        <div class="timeline">
-            <p><strong>Phase 00:</strong> Prerequisites (1-2 weeks)</p>
-            <p><strong>Phase 01:</strong> Inventory</p>
-            <p><strong>Phase 02:</strong> Network prep (1-2 weeks)</p>
-            <p><strong>Phase 03:</strong> Identity (1 week)</p>
-            <p><strong>Phase 04:</strong> Deploy AGC (1 week)</p>
-            <p><strong>Phase 05:</strong> Translate manifests (1-2 weeks)</p>
-            <p><strong>Phase 06:</strong> Test in staging</p>
-            <p><strong>Phase 07:</strong> Traffic split</p>
-            <p><strong>Phase 08:</strong> Monitor and validate</p>
-            <p><strong>Phase 09:</strong> Decommission ingress-nginx</p>
+  <section>
+    <h3>The topology you're walking into.</h3>
+    <div class="cols left-heavy">
+      <div class="col">
+        <div class="diagram">
+          <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="240" height="280" fill="none" stroke="#3A4149" stroke-width="1.5"/>
+            <text x="32" y="42" fill="#8A9199" font-size="11" font-family="system-ui" font-weight="700" letter-spacing="2">HUB VNET</text>
+            <rect x="50" y="80" width="180" height="60" fill="#2A323B" stroke="#FFB400" stroke-width="1"/>
+            <text x="140" y="115" fill="#E8E6E3" font-size="13" font-family="system-ui" text-anchor="middle">Azure Firewall</text>
+            <rect x="50" y="180" width="180" height="60" fill="#2A323B" stroke="#3A4149" stroke-width="1"/>
+            <text x="140" y="208" fill="#E8E6E3" font-size="13" font-family="system-ui" text-anchor="middle">Front Door / AppGw</text>
+            <text x="140" y="226" fill="#8A9199" font-size="10" font-family="system-ui" text-anchor="middle">public ingress</text>
+            <rect x="340" y="20" width="240" height="280" fill="none" stroke="#3A4149" stroke-width="1.5"/>
+            <text x="352" y="42" fill="#8A9199" font-size="11" font-family="system-ui" font-weight="700" letter-spacing="2">SPOKE VNET</text>
+            <rect x="370" y="80" width="180" height="60" fill="#2A323B" stroke="#3A4149" stroke-width="1"/>
+            <text x="460" y="108" fill="#E8E6E3" font-size="13" font-family="system-ui" text-anchor="middle">AKS subnet</text>
+            <text x="460" y="126" fill="#8A9199" font-size="10" font-family="system-ui" text-anchor="middle">private cluster API</text>
+            <rect x="370" y="180" width="180" height="60" fill="#2A323B" stroke="#FFB400" stroke-width="1"/>
+            <text x="460" y="208" fill="#E8E6E3" font-size="13" font-family="system-ui" text-anchor="middle">AGC subnet</text>
+            <text x="460" y="226" fill="#8A9199" font-size="10" font-family="system-ui" text-anchor="middle">delegated</text>
+            <line x1="260" y1="160" x2="340" y2="160" stroke="#FFB400" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="300" y="153" fill="#FFB400" font-size="10" font-family="system-ui" text-anchor="middle">peering</text>
+          </svg>
         </div>
-        <aside class="notes">
-            Phase 00 is the longest because it depends on Microsoft GA dates. Phases 02-04 are network and identity setup (mostly IaC). Phase 05 is translation and manual review (annotation gaps). Phases 07-08 are traffic cutover with rollback procedures. Phase 09 is cleanup. Allow 3-6 months end to end for a production ALZ Corp environment.
-        </aside>
-    </section>
-
-    <section>
-        <h3>Phase 00: Prerequisites</h3>
+      </div>
+      <div class="col">
         <ul>
-            <li>AGC private cluster support reaches GA (BLOCKER)</li>
-            <li>AKS cluster on supported version (1.27+)</li>
-            <li>Gateway API CRDs installed (v1)</li>
-            <li>Hub-spoke VNets and peering configured</li>
-            <li>Azure Firewall UDR for egress</li>
+          <li>Hub owns Azure Firewall, VPN, Bastion</li>
+          <li>Spoke hosts AKS plus a delegated AGC subnet</li>
+          <li>No public IPs on AKS nodes</li>
+          <li>Private cluster API server</li>
+          <li>Egress flows out via Azure Firewall UDR</li>
         </ul>
-        <aside class="notes">
-            Do not proceed until AGC private cluster support is GA, or you have accepted the preview risk. Verify your AKS cluster is on a supported Kubernetes version (1.27 or later). Install Gateway API CRDs v1 (not v1beta1). Confirm your hub-spoke VNets are peered and the Azure Firewall UDR is in place. If any of these are missing, pause and fix them before moving to Phase 01.
-        </aside>
-    </section>
+        <p class="citation">
+          <a href="https://learn.microsoft.com/azure/cloud-adoption-framework/ready/landing-zone/">Azure Landing Zones</a>
+        </p>
+      </div>
+    </div>
+    <aside class="notes">Hub VNet is owned by central networking. Spoke VNet is owned by the workload team. AKS clusters run in spoke VNets with no public IPs. The API server is private (VPN or ExpressRoute). All egress from AKS pods is routed to Azure Firewall via UDR. AGC has to work inside that.</aside>
+  </section>
 
-    <section>
-        <h3>Phase 02-03: Network and identity</h3>
-        <ul>
-            <li>Create delegated subnet for AGC in spoke VNet</li>
-            <li>Create managed identity for AGC controller</li>
-            <li>Assign RBAC roles (Network Contributor, Managed Identity Operator)</li>
-            <li>Configure federated credential for Workload Identity</li>
-            <li>Deploy AGC Helm chart with identity binding</li>
-        </ul>
-        <aside class="notes">
-            Use the Terraform or Bicep modules in this repo to create the delegated subnet and managed identity. The subnet must have Microsoft.ServiceNetworking/trafficControllers delegation. The managed identity needs Network Contributor on the subnet and Managed Identity Operator on itself. Create a federated credential with subject system:serviceaccount:azure-alb-system:alb-controller. Deploy the AGC Helm chart with the managed identity client ID in values.yaml. Verify the controller pod starts and does not log identity errors.
-        </aside>
-    </section>
+  <section>
+    <h3>AGC needs a delegated subnet.</h3>
+    <ul>
+      <li>Subnet delegation: <code>Microsoft.ServiceNetworking/trafficControllers</code></li>
+      <li>Recommend /24 or larger to fit control and data plane scale-out</li>
+      <li>Frontend mode: internal for ALZ Corp, private IP only</li>
+      <li>Front Door or AppGw in the hub fronts the AGC internal IP</li>
+    </ul>
+    <p class="citation">
+      <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers">MS Docs: AGC subnet requirements</a>
+    </p>
+    <aside class="notes">AGC needs a subnet delegated to Microsoft.ServiceNetworking/trafficControllers. Size it /24 or larger for headroom. For ALZ Corp, configure AGC with an internal frontend (private IP). Place a public Front Door or Application Gateway in the hub and point it at the AGC internal IP. AKS nodes and AGC instances stay fully private.</aside>
+  </section>
 
-    <section>
-        <h3>Phase 04: Deploy AGC</h3>
-        <ul>
-            <li>Deploy GatewayClass (controllerName: azure.com/alb-controller)</li>
-            <li>Deploy Gateway with internal frontend</li>
-            <li>Verify AGC provisions the Azure Application Gateway for Containers resource</li>
-            <li>Verify the internal IP is routable from hub VNet</li>
-        </ul>
-        <aside class="notes">
-            Apply the GatewayClass manifest. This tells the AGC controller to manage gateways of this class. Apply the Gateway manifest with an internal frontend annotation. The AGC controller will provision an Azure Application Gateway for Containers resource and assign a private IP. Use kubectl get gateway to see the IP. From a VM in the hub VNet, curl the IP to verify network reachability. If you cannot reach the IP, check NSGs, UDRs, and subnet delegation.
-        </aside>
-    </section>
+  <section>
+    <h3>Traffic path, edge to pod.</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 800 220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#FFB400"/>
+          </marker>
+        </defs>
+        <g font-family="system-ui">
+          <rect x="10" y="80" width="120" height="60" fill="#2A323B" stroke="#3A4149"/>
+          <text x="70" y="115" fill="#E8E6E3" font-size="13" text-anchor="middle">Internet</text>
+          <line x1="130" y1="110" x2="170" y2="110" stroke="#FFB400" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <rect x="170" y="80" width="120" height="60" fill="#2A323B" stroke="#FFB400"/>
+          <text x="230" y="108" fill="#E8E6E3" font-size="13" text-anchor="middle">Front Door</text>
+          <text x="230" y="124" fill="#8A9199" font-size="10" text-anchor="middle">WAF, TLS, GLB</text>
+          <line x1="290" y1="110" x2="330" y2="110" stroke="#FFB400" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <rect x="330" y="80" width="120" height="60" fill="#2A323B" stroke="#3A4149"/>
+          <text x="390" y="108" fill="#E8E6E3" font-size="13" text-anchor="middle">Azure Firewall</text>
+          <text x="390" y="124" fill="#8A9199" font-size="10" text-anchor="middle">egress, threat intel</text>
+          <line x1="450" y1="110" x2="490" y2="110" stroke="#FFB400" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <rect x="490" y="80" width="120" height="60" fill="#2A323B" stroke="#FFB400"/>
+          <text x="550" y="108" fill="#E8E6E3" font-size="13" text-anchor="middle">AGC</text>
+          <text x="550" y="124" fill="#8A9199" font-size="10" text-anchor="middle">routing, TLS</text>
+          <line x1="610" y1="110" x2="650" y2="110" stroke="#FFB400" stroke-width="1.2" marker-end="url(#arr2)"/>
+          <rect x="650" y="80" width="130" height="60" fill="#2A323B" stroke="#3A4149"/>
+          <text x="715" y="115" fill="#E8E6E3" font-size="13" text-anchor="middle">AKS pods</text>
+          <text x="230" y="60" fill="#8A9199" font-size="10" font-weight="700" letter-spacing="2" text-anchor="middle">HUB</text>
+          <text x="390" y="60" fill="#8A9199" font-size="10" font-weight="700" letter-spacing="2" text-anchor="middle">HUB</text>
+          <text x="550" y="60" fill="#8A9199" font-size="10" font-weight="700" letter-spacing="2" text-anchor="middle">SPOKE</text>
+          <text x="715" y="60" fill="#8A9199" font-size="10" font-weight="700" letter-spacing="2" text-anchor="middle">SPOKE</text>
+          <text x="400" y="190" fill="#8A9199" font-size="11" text-anchor="middle">Defence in depth: TLS terminates at Front Door and again at AGC if configured.</text>
+        </g>
+      </svg>
+    </div>
+    <aside class="notes">Traffic enters via Front Door in the hub. Front Door terminates TLS and runs WAF. It forwards to AGC in the spoke VNet. AGC terminates TLS again if configured and routes to the right pod. Egress from AKS pods goes through Azure Firewall via UDR. No public IPs on AKS, central egress control, defence in depth.</aside>
+  </section>
 
-    <section>
-        <h3>Phase 05-06: Translate and test</h3>
+  <section>
+    <h3>Workload Identity, no SP secrets.</h3>
+    <div class="cols">
+      <div class="col">
+        <div class="col-head">Federated credential subject</div>
+        <pre><code class="language-yaml" data-trim>
+audiences:
+  - "api://AzureADTokenExchange"
+issuer: <AKS OIDC issuer URL>
+subject: |
+  system:serviceaccount:
+    azure-alb-system:alb-controller
+        </code></pre>
+      </div>
+      <div class="col">
         <ul>
-            <li>Run ingress2gateway on all Ingress manifests</li>
-            <li>Manually review HTTPRoute output (check hostnames, paths, backends)</li>
-            <li>Identify annotation gaps and plan workarounds</li>
-            <li>Deploy HTTPRoutes to staging cluster</li>
-            <li>Run smoke tests (happy path, 404, 503, TLS)</li>
+          <li>AGC controller pod must mutate Azure resources</li>
+          <li>Token exchange happens at runtime, not at boot</li>
+          <li>No SP client secrets stored in any kube Secret</li>
+          <li>RBAC: Network Contributor on the subnet, MI Operator on itself</li>
         </ul>
-        <aside class="notes">
-            Export all Ingress resources to a directory. Run ingress2gateway ingress-dir/ -o gateway-dir/. Review the generated HTTPRoute manifests. Check that hostnames, path matching, and backend service references are correct. For each ingress-nginx annotation that did not translate, decide how to handle it. Deploy the HTTPRoutes to a staging AKS cluster with AGC. Run your smoke test suite. Do not proceed to production until staging is green.
-        </aside>
-    </section>
+        <p class="citation">
+          <a href="https://learn.microsoft.com/azure/aks/workload-identity-overview">MS Docs: Workload Identity</a>
+        </p>
+      </div>
+    </div>
+    <aside class="notes">The AGC controller creates and updates Azure resources. Instead of storing an SP secret in a kube Secret, use Workload Identity. The AKS cluster has an OIDC issuer. You create a federated credential on a managed identity, bind it to a kube ServiceAccount, and project the token into the controller pod. The pod exchanges that token for an Azure AD token at runtime. No secret sprawl, aligns with zero-trust.</aside>
+  </section>
 
-    <section>
-        <h3>Phase 09: Decommission</h3>
-        <ul>
-            <li>After 2-4 weeks of stable AGC traffic, decommission ingress-nginx</li>
-            <li>Delete Ingress resources</li>
-            <li>Uninstall ingress-nginx Helm chart</li>
-            <li>Remove ingress-nginx LoadBalancer service</li>
-            <li>Update DNS to point to AGC frontend</li>
-        </ul>
-        <aside class="notes">
-            Do not rush this phase. Run dual-stack (ingress-nginx and AGC) in production for at least 2 weeks, ideally 4 weeks. Monitor error rates, latency, and resource usage. If AGC is stable and ingress-nginx is no longer receiving traffic, begin decommission. Delete Ingress resources. Uninstall the ingress-nginx Helm release. Delete the LoadBalancer service. Update DNS records to point exclusively to the AGC frontend IP. Keep the ingress-nginx YAML in git history for rollback.
-        </aside>
-    </section>
+  <section>
+    <h3>Private cluster AGC is still preview.</h3>
+    <div class="callout">
+      <div class="ribbon">Preview, verified 22 April 2026</div>
+      <p>AGC private cluster support has no published GA date. ALZ Corp requires a private cluster API. This is the gating prerequisite in Phase 00 of the runbook.</p>
+    </div>
+    <ul>
+      <li>If you cannot wait for GA, you accept preview SLA terms</li>
+      <li>Document the risk in your CAB submission</li>
+      <li>Track the Microsoft public roadmap for status changes</li>
+    </ul>
+    <p class="citation">
+      <a href="https://learn.microsoft.com/azure/application-gateway/for-containers/private-cluster-support">MS Docs: AGC private cluster support (preview)</a> &middot; ADR-003
+    </p>
+    <aside class="notes">This is the biggest blocker. ALZ Corp requires private cluster API servers. AGC private cluster support was announced in preview, but as of April 22 2026 it has not reached GA. Microsoft has not published a date. If you cannot wait, accept preview SLA terms (no production support guarantee, breaking changes possible) and document the risk for change advisory.</aside>
+  </section>
+
+  <section>
+    <h3>Same outputs, two languages.</h3>
+    <div class="cols">
+      <div class="col">
+        <div class="col-head">Terraform</div>
+        <pre><code class="language-hcl" data-trim>
+output "agc_id" {
+  value = azapi_resource.agc.id
+}
+output "agc_fqdn" {
+  value = azapi_resource.agc.body.properties.fqdn
+}
+output "frontend_id" {
+  value = azapi_resource.frontend.id
+}
+        </code></pre>
+      </div>
+      <div class="col">
+        <div class="col-head">Bicep</div>
+        <pre><code class="language-bicep" data-trim>
+output agc_id string = agc.id
+output agc_fqdn string = agc.properties.fqdn
+output frontend_id string = frontend.id
+        </code></pre>
+      </div>
+    </div>
+    <p class="note">Output names match. Wrapper modules can swap engines without changing the contract. Validated by <code>outputs.schema.json</code> per ADR-002.</p>
+    <aside class="notes">Some teams use Terraform, some use Bicep. This repo ships both. ADR-002 defines the contract: TF and Bicep modules produce the same outputs (same names, same types, same semantics). Validated with outputs.schema.json. Wrapper modules can swap between engines without changing the call site. Required for enterprises with mixed IaC tooling.</aside>
+  </section>
+
 </section>
 
-<!-- SECTION 5: TRY IT -->
-<section>
-    <section>
-        <h2>Try it</h2>
-        <aside class="notes">
-            This repository is open source and ready for testing. Start with the quickstart, run the validation scripts, and report issues. Contributions are welcome, especially for annotation translation edge cases and ALZ Corp topology variants.
-        </aside>
-    </section>
+<!-- ===== SECTION 4: RUNBOOK ===== -->
+<section data-section="04 / Runbook">
 
-    <section>
-        <h3>Quickstart</h3>
-        <pre><code class="bash"># Clone the repo
+  <section>
+    <div class="divider">
+      <div class="sect-num">04</div>
+      <div class="sect-title">10 phases.<br>Atomic rollback. Dry-run first.</div>
+      <p class="sect-lede">Each phase is a unit of change you can undo. Validation gates between every step.</p>
+    </div>
+    <aside class="notes">The runbook is the centerpiece of this repo. 10 phases, clear gates, validation scripts, rollback procedures. Each phase has a README with steps, expected outcomes, troubleshooting. Do not skip phases. Do not merge phases. Order matters.</aside>
+  </section>
+
+  <section>
+    <h3>10 phases, end to end.</h3>
+    <div class="phase-line">
+      <div class="phase-node"><div class="dot">00</div><div class="label">Prereqs</div></div>
+      <div class="phase-node"><div class="dot">01</div><div class="label">Inventory</div></div>
+      <div class="phase-node"><div class="dot">02</div><div class="label">Network</div></div>
+      <div class="phase-node"><div class="dot">03</div><div class="label">Identity</div></div>
+      <div class="phase-node"><div class="dot">04</div><div class="label">Deploy AGC</div></div>
+      <div class="phase-node"><div class="dot">05</div><div class="label">Translate</div></div>
+      <div class="phase-node"><div class="dot">06</div><div class="label">Coexist</div></div>
+      <div class="phase-node gate"><div class="dot">07</div><div class="label">Cutover</div></div>
+      <div class="phase-node"><div class="dot">08</div><div class="label">Validate</div></div>
+      <div class="phase-node cut"><div class="dot">09</div><div class="label">Decom</div></div>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <p class="note">Phase 00 is gated by AGC private cluster GA. Phases 02 to 04 are IaC. Phase 05 is the manual review. Phase 07 is the live cutover, 2 to 5 minute window.</p>
+      </div>
+      <div class="col">
+        <p class="note">Plan 3 to 6 months end to end for production ALZ Corp. Coexist for at least 2 weeks before cutover, longer if traffic is heavy.</p>
+      </div>
+    </div>
+    <aside class="notes">Phase 00 is the longest because it depends on Microsoft GA dates. Phases 02 to 04 are network and identity (mostly IaC). Phase 05 is translation and manual annotation review. Phases 07 to 08 are traffic cutover with rollback. Phase 09 is cleanup. 3 to 6 months is realistic for production ALZ Corp.</aside>
+  </section>
+
+  <section>
+    <h3>Phase 00, do not start without these.</h3>
+    <div class="callout">
+      <div class="ribbon">Blocker</div>
+      <p>AGC private cluster support reaches GA, or you sign off on the preview risk in writing.</p>
+    </div>
+    <ul>
+      <li>AKS cluster on Kubernetes 1.27 or later</li>
+      <li>Gateway API CRDs v1 installed, not v1beta1</li>
+      <li>Hub-spoke VNets peered, NSGs aligned</li>
+      <li>Azure Firewall UDR present on the AKS subnet</li>
+    </ul>
+    <aside class="notes">Do not proceed until AGC private cluster support is GA, or you have signed off on the preview risk. Verify the AKS cluster is on Kubernetes 1.27+. Install Gateway API CRDs v1 (not v1beta1). Confirm hub-spoke peering and the firewall UDR. If any are missing, pause and fix before Phase 01.</aside>
+  </section>
+
+  <section>
+    <h3>Phase 02 to 03, network and identity.</h3>
+    <ol class="numbered">
+      <li><span class="n">01.</span> Create the delegated subnet for AGC in the spoke VNet</li>
+      <li><span class="n">02.</span> Create a managed identity for the AGC controller</li>
+      <li><span class="n">03.</span> Assign Network Contributor on the subnet, MI Operator on itself</li>
+      <li><span class="n">04.</span> Create the federated credential bound to <code>azure-alb-system/alb-controller</code></li>
+      <li><span class="n">05.</span> Deploy the AGC Helm chart with the MI client ID set in values.yaml</li>
+    </ol>
+    <aside class="notes">Use the Terraform or Bicep modules in the repo. The subnet needs Microsoft.ServiceNetworking/trafficControllers delegation. The MI needs Network Contributor on the subnet and Managed Identity Operator on itself. Federated credential subject is system:serviceaccount:azure-alb-system:alb-controller. Deploy the Helm chart, watch the controller logs for identity errors.</aside>
+  </section>
+
+  <section>
+    <h3>Phase 04, deploy AGC.</h3>
+    <div class="cols">
+      <div class="col">
+        <ol class="numbered">
+          <li><span class="n">01.</span> Apply <code>GatewayClass</code> with controllerName <code>azure.com/alb-controller</code></li>
+          <li><span class="n">02.</span> Apply <code>Gateway</code> with internal frontend annotation</li>
+          <li><span class="n">03.</span> Wait for AGC to provision the AppGw for Containers resource</li>
+          <li><span class="n">04.</span> Curl the assigned private IP from a hub VM</li>
+        </ol>
+      </div>
+      <div class="col">
+        <pre><code class="language-bash" data-trim>
+kubectl get gateway -n infra
+# wait for ADDRESS column
+
+az vm run-command invoke \
+  -g hub-rg -n hub-jumpbox \
+  --command-id RunShellScript \
+  --scripts "curl -v http://10.x.y.z"
+        </code></pre>
+      </div>
+    </div>
+    <aside class="notes">Apply the GatewayClass. The AGC controller will manage gateways of this class. Apply the Gateway with the internal frontend annotation. AGC will provision an AppGw for Containers resource and assign a private IP. From a VM in the hub VNet, curl the IP to confirm reachability. If unreachable, check NSGs, UDRs, subnet delegation.</aside>
+  </section>
+
+  <section>
+    <h3>Phase 05 to 06, translate and coexist.</h3>
+    <pre><code class="language-bash" data-trim>
+kubectl get ingress -A -o yaml > inventory/ingress.yaml
+
+ingress2gateway translate \
+  --providers ingress-nginx \
+  -f inventory/ingress.yaml > generated/httproutes.yaml
+
+# review every HTTPRoute by hand
+$EDITOR generated/httproutes.yaml
+
+kubectl apply -f generated/httproutes.yaml -n staging
+# both controllers running, route specific test traffic via AGC
+    </code></pre>
+    <p class="note">Coexist for 2 weeks minimum. Compare error rates, latency, and request volume per controller before any cutover.</p>
+    <aside class="notes">Export all Ingress to a file. Run ingress2gateway against it. Review every generated HTTPRoute by hand. Confirm hostnames, path matching, backendRef names. For each annotation that did not translate, decide how to handle. Apply HTTPRoutes to staging. Run smoke tests. Do not move to production until staging is green.</aside>
+  </section>
+
+  <section>
+    <h3>Phase 09, decommission slowly.</h3>
+    <div class="grid-2x2">
+      <div class="card"><h4>Wait 2 to 4 weeks</h4><p>Coexistence in production. Watch error rates and latency.</p></div>
+      <div class="card"><h4>Delete Ingress resources</h4><p>Source-controlled. Recoverable from git.</p></div>
+      <div class="card"><h4>Uninstall ingress-nginx Helm release</h4><p>Then delete the LoadBalancer service.</p></div>
+      <div class="card"><h4>Update DNS to AGC frontend</h4><p>Watch TTL. Validate from multiple resolvers.</p></div>
+    </div>
+    <aside class="notes">Do not rush. Run dual-stack in production for at least 2 weeks, ideally 4. Monitor error rates, latency, resource use. If AGC is stable and ingress-nginx is no longer receiving traffic, begin decommission. Delete Ingress resources, uninstall the Helm release, delete the LoadBalancer service. Update DNS to the AGC frontend. Keep the ingress-nginx YAML in git for rollback.</aside>
+  </section>
+
+</section>
+
+<!-- ===== SECTION 5: TRY IT ===== -->
+<section data-section="05 / Try it">
+
+  <section>
+    <div class="divider">
+      <div class="sect-num">05</div>
+      <div class="sect-title">Quickstart, contribute, ship.</div>
+      <p class="sect-lede">Read-only first. Plan everything before you apply anything.</p>
+    </div>
+    <aside class="notes">Open source, ready for testing. Start with the quickstart, run the validation scripts, file issues. Contributions welcome especially for annotation translation edge cases and ALZ Corp variants.</aside>
+  </section>
+
+  <section>
+    <h3>Quickstart.</h3>
+    <pre><code class="language-bash" data-trim>
 git clone https://github.com/martinopedal/aks-automatic-ingress-migration.git
 cd aks-automatic-ingress-migration
 
-# Terraform example (ALZ Corp spoke VNet with AGC)
+# Terraform: ALZ Corp spoke VNet with AGC
 cd terraform/examples/alz-corp-spoke
 terraform init
-terraform plan
+terraform plan          # read-only, default
 
-# Bicep example (same)
-cd bicep/examples/alz-corp-spoke
-az deployment group create --template-file main.bicep --parameters main.parameters.json
+# Bicep parity
+cd ../../../bicep/examples/alz-corp-spoke
+az deployment group what-if -g <rg> \
+  -f main.bicep -p main.parameters.json
 
-# Run ingress2gateway
-kubectl get ingress --all-namespaces -o yaml > ingress-backup.yaml
-ingress2gateway ingress-backup.yaml -o gateway-manifests/</code></pre>
-        <aside class="notes">
-            The quickstart examples provision a spoke VNet with AGC, a managed identity with Workload Identity federation, and a Gateway with an internal frontend. They do not provision the hub VNet or Azure Firewall (assumes you have an existing ALZ Corp foundation). Run terraform plan or az deployment group what-if to preview changes. Do not deploy to production until you have reviewed the runbook and completed Phase 00.
-        </aside>
-    </section>
+# Translate your ingresses
+kubectl get ingress -A -o yaml > inventory/ingress.yaml
+ingress2gateway translate \
+  -f inventory/ingress.yaml > generated/httproutes.yaml
+    </code></pre>
+    <p class="note">Quickstart provisions the spoke VNet, AGC, MI with federated credential, and a Gateway with internal frontend. Hub VNet and Azure Firewall are assumed to exist.</p>
+    <aside class="notes">Quickstart provisions a spoke VNet with AGC, a managed identity with Workload Identity federation, and a Gateway with an internal frontend. It does not provision the hub VNet or Azure Firewall (assumes existing ALZ Corp foundation). Run terraform plan or az deployment what-if to preview. Do not deploy to production until you have completed Phase 00.</aside>
+  </section>
 
-    <section>
-        <h3>Contribute</h3>
+  <section>
+    <h3>Contribute.</h3>
+    <div class="cols">
+      <div class="col">
+        <div class="col-head">Where help is wanted</div>
         <ul>
-            <li>Report issues: annotation gaps, breaking changes, IaC bugs</li>
-            <li>Submit PRs: runbook improvements, validation scripts, Helm chart updates</li>
-            <li>Review ADRs: positioned as orchestration layer, not translator</li>
-            <li>Label issues with <code>squad</code> for triage</li>
+          <li>Annotation translation edge cases</li>
+          <li>ALZ Corp topology variants, multi-region, BCDR</li>
+          <li>Validation scripts for breaking-change detection</li>
+          <li>Helm chart improvements</li>
+        </ul>
+      </div>
+      <div class="col">
+        <div class="col-head">Process</div>
+        <ul>
+          <li>Label issues with <code>squad</code> for triage</li>
+          <li>One reviewer required, clean CI required</li>
+          <li>Read ADR-001 before scope changes</li>
         </ul>
         <p class="citation">
-            Repo: <a href="https://github.com/martinopedal/aks-automatic-ingress-migration">martinopedal/aks-automatic-ingress-migration</a>
+          <a href="https://github.com/martinopedal/aks-automatic-ingress-migration">github.com/martinopedal/aks-automatic-ingress-migration</a>
         </p>
-        <aside class="notes">
-            This project is community-driven. If you find an annotation that ingress2gateway does not translate, open an issue with a minimal example. If you write a validation script or improve the runbook, submit a PR. All PRs require one reviewer and clean CI. Label issues with squad for triage by the lead. Read ADR-001 before proposing major scope changes; this repo is an orchestration layer, not a replacement for ingress2gateway.
-        </aside>
-    </section>
+      </div>
+    </div>
+    <aside class="notes">Community-driven. If ingress2gateway misses an annotation, open an issue with a minimal repro. If you write a validation script or improve the runbook, send a PR. One reviewer, clean CI. Squad label for triage. Read ADR-001 before proposing scope changes; this repo is an orchestration layer, not a translator replacement.</aside>
+  </section>
 
-    <section>
-        <h2>Closing</h2>
-        <ul>
-            <li>March 2026: ingress-nginx retires</li>
-            <li>November 2026: App Routing drops to critical-only</li>
-            <li>AGC + Gateway API is the path forward</li>
-            <li>Start planning now: 3-6 months for ALZ Corp</li>
-        </ul>
-        <p>Questions?</p>
-        <aside class="notes">
-            You have 18 months (as of this deck creation) to migrate off ingress-nginx. AGC private cluster support is the gate. Start inventory and planning now. Run the translation tool. Test in staging. Document your risks. Align with your security and networking teams. Do not wait until November 2025. By then, you will be late.
-        </aside>
-    </section>
+  <section>
+    <div class="hero">
+      <div class="eyebrow">Closing</div>
+      <h1>You have 18 months.<br>Start now.</h1>
+      <div class="stat-row" style="margin-top: 36px;">
+        <div class="stat">
+          <div class="num">Mar 26</div>
+          <div class="label">ingress-nginx EOL</div>
+        </div>
+        <div class="stat">
+          <div class="num">Nov 26</div>
+          <div class="label">App Routing critical-only</div>
+        </div>
+        <div class="stat">
+          <div class="num">3-6 mo</div>
+          <div class="label">ALZ Corp migration</div>
+        </div>
+      </div>
+      <p class="lede" style="margin-top: 36px;">Inventory this week. Plan the network changes. Run ingress2gateway. By the time AGC private cluster goes GA, you want to be ready to apply, not start.</p>
+    </div>
+    <aside class="notes">As of this deck creation you have 18 months. AGC private cluster support is the gate. Start inventory and planning now. Run the translation tool. Test in staging. Document the risks. Align with security and networking. Don't wait until November 2025 or you will be late.</aside>
+  </section>
+
 </section>
 
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
-    <script>
-        Reveal.initialize({
-            hash: true,
-            slideNumber: true,
-            transition: 'slide',
-            plugins: [ RevealNotes ]
-        });
-    </script>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  width: 1280,
+  height: 760,
+  margin: 0.04,
+  plugins: [ RevealNotes, RevealHighlight ]
+});
+
+Reveal.on('ready', function () {
+  document.querySelectorAll('.reveal .slides > section[data-section]').forEach(function (top) {
+    var label = top.getAttribute('data-section') || '';
+    var parts = label.split(' / ');
+    var num = parts[0] || '';
+    var name = parts[1] || '';
+    var leaves = top.querySelectorAll(':scope > section');
+    if (leaves.length === 0) leaves = [top];
+    leaves.forEach(function (slide) {
+      if (slide.hasAttribute('data-nochip')) return;
+      if (slide.querySelector(':scope > .chip')) return;
+      var chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = '<span class="chip-num">' + num + '</span><span class="chip-name">' + name + '</span>';
+      slide.appendChild(chip);
+    });
+  });
+});
+</script>
 </body>
 </html>
