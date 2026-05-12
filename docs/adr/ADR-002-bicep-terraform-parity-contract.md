@@ -122,6 +122,6 @@ We could document parity as a goal but not enforce it in CI. Rejected because un
 - [ADR-001: Positioning vs Upstream Tools](./ADR-001-positioning-vs-upstream-tools.md)
 - [Terraform azurerm provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
 - [Terraform azapi provider documentation](https://registry.terraform.io/providers/Azure/azapi/latest/docs)
-- [Bicep resource reference for Application Gateway for Containers](https://learn.microsoft.com/en-us/azure/templates/microsoft.servicenetworking/trafficcontrollers)
-- [Bicep extensibility providers](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/bicep-extensibility-kubernetes-provider)
+- [Bicep resource reference for Application Gateway for Containers](https://learn.microsoft.com/azure/templates/microsoft.servicenetworking/trafficcontrollers)
+- [Bicep extensibility providers](https://learn.microsoft.com/azure/azure-resource-manager/bicep/bicep-extensibility-kubernetes-provider)
 - [Issue #7: Define parity test and CI gate](https://github.com/martinopedal/aks-automatic-ingress-migration/issues/7)

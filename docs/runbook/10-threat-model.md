@@ -17,8 +17,8 @@ Default assumptions for this repository:
 
 Reference architecture and AGC platform docs:
 
-- [AKS landing zone accelerator](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/app-platform/aks/landing-zone-accelerator)
-- [Application Gateway for Containers overview](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/overview)
+- [AKS landing zone accelerator](https://learn.microsoft.com/azure/cloud-adoption-framework/scenarios/app-platform/aks/landing-zone-accelerator)
+- [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview)
 
 ## Trust boundaries and public surface
 
@@ -44,7 +44,7 @@ Baseline controls:
 
 References:
 
-- [AGC components and data path](https://learn.microsoft.com/en-us/azure/application-gateway/for-containers/application-gateway-for-containers-components)
+- [AGC components and data path](https://learn.microsoft.com/azure/application-gateway/for-containers/application-gateway-for-containers-components)
 - [Gateway API HTTP routing model](https://gateway-api.sigs.k8s.io/concepts/api-overview/)
 
 ## NSG and firewall posture
@@ -67,8 +67,8 @@ References:
 
 References:
 
-- [Azure Firewall in hub-spoke networks](https://learn.microsoft.com/en-us/azure/architecture/example-scenario/firewalls/azure-firewall)
-- [AKS egress outbound controls](https://learn.microsoft.com/en-us/azure/aks/limit-egress-traffic)
+- [Azure Firewall in hub-spoke networks](https://learn.microsoft.com/azure/architecture/example-scenario/firewalls/azure-firewall)
+- [AKS egress outbound controls](https://learn.microsoft.com/azure/aks/limit-egress-traffic)
 
 ## mTLS posture
 
