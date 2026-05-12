@@ -36,6 +36,10 @@ Pre-alpha. Backlog tracked as GitHub issues with the `squad` label.
 
 See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix is reviewed quarterly by Atlas.
 
+## Documentation
+
+Full documentation hub: [`docs/index.md`](docs/index.md). Includes runbook phases, ADRs, migration guides, and architecture decisions.
+
 ## Runbook security baseline
 
 - [Threat model, AGC migration path](docs/runbook/10-threat-model.md)
