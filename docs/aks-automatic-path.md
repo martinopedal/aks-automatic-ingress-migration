@@ -29,6 +29,9 @@ Verified against the canonical add-on quickstart (accessed 2026-05-13):
 - Azure CNI or Azure CNI Overlay network plugin.
 - OIDC issuer + Workload Identity enabled (default on AKS Automatic; confirm with `az aks show`).
 - Supported AKS Kubernetes version per [supported versions](https://learn.microsoft.com/azure/aks/supported-kubernetes-versions).
+
+**Option 1: Azure CLI**
+
 - `az` CLI with `alb` and `aks-preview` extensions installed.
 
 ```bash
@@ -36,9 +39,28 @@ az extension add --name alb
 az extension add --name aks-preview
 ```
 
+**Option 2: Azure PowerShell**
+
+- PowerShell 7+ with `Az.Aks` and `Az.Resources` modules. Per the [add-on quickstart, PowerShell tab](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon):
+
+```powershell
+Install-Module Az.Aks -Force
+Install-Module Az.Resources -Force
+Connect-AzAccount
+Set-AzContext -SubscriptionId "<your subscription id>"
+Register-AzProviderFeature -FeatureName ManagedGatewayAPIPreview -ProviderNamespace Microsoft.ContainerService
+Register-AzProviderFeature -FeatureName ApplicationLoadBalancerPreview -ProviderNamespace Microsoft.ContainerService
+Register-AzResourceProvider -ProviderNamespace Microsoft.ContainerService
+Register-AzResourceProvider -ProviderNamespace Microsoft.Network
+Register-AzResourceProvider -ProviderNamespace Microsoft.NetworkFunction
+Register-AzResourceProvider -ProviderNamespace Microsoft.ServiceNetworking
+```
+
 ## Steps
 
 ### 1. Register feature flags and resource providers
+
+**Option 1: Azure CLI**
 
 ```bash
 az feature register --namespace Microsoft.ContainerService --name ManagedGatewayAPIPreview
@@ -63,7 +85,35 @@ Both must report `Registered`. Re-register the resource providers after the feat
 az provider register --namespace Microsoft.ContainerService
 ```
 
+**Option 2: Azure PowerShell**
+
+Per the [add-on quickstart, PowerShell tab](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon):
+
+```powershell
+Register-AzProviderFeature -FeatureName ManagedGatewayAPIPreview -ProviderNamespace Microsoft.ContainerService
+Register-AzProviderFeature -FeatureName ApplicationLoadBalancerPreview -ProviderNamespace Microsoft.ContainerService
+Register-AzResourceProvider -ProviderNamespace Microsoft.ContainerService
+Register-AzResourceProvider -ProviderNamespace Microsoft.Network
+Register-AzResourceProvider -ProviderNamespace Microsoft.NetworkFunction
+Register-AzResourceProvider -ProviderNamespace Microsoft.ServiceNetworking
+```
+
+Verify registration completes before proceeding:
+
+```powershell
+Get-AzProviderFeature -ProviderNamespace Microsoft.ContainerService -FeatureName ManagedGatewayAPIPreview | Select-Object -ExpandProperty RegistrationState
+Get-AzProviderFeature -ProviderNamespace Microsoft.ContainerService -FeatureName ApplicationLoadBalancerPreview | Select-Object -ExpandProperty RegistrationState
+```
+
+Both must report `Registered`. Re-register the resource providers after the features flip to apply the change:
+
+```powershell
+Register-AzResourceProvider -ProviderNamespace Microsoft.ContainerService
+```
+
 ### 2. Enable the add-on on an existing AKS Automatic cluster
+
+**Option 1: Azure CLI**
 
 ```bash
 AKS_NAME='<your cluster name>'
@@ -75,6 +125,10 @@ az aks update \
   --enable-gateway-api \
   --enable-application-load-balancer
 ```
+
+**Option 2: Azure PowerShell**
+
+This step is not published as a native PowerShell cmdlet on MS Learn. The [add-on quickstart](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) ships Azure CLI and Azure REST tabs for this step. From PowerShell, either invoke the Azure CLI command above directly (`az aks update ...`) or use `Invoke-AzRestMethod` to call the AKS managedClusters PATCH endpoint. Consult the REST tab of the quickstart for the exact JSON schema.
 
 The add-on auto-creates the following in the AKS node resource group (`MC_<rg>_<cluster>_<region>`), per the add-on quickstart:
 
@@ -115,6 +169,8 @@ Follow runbook phase [04-translate-manifests.md](./runbook/04-translate-manifest
 
 ## Validation
 
+**Option 1: Azure CLI**
+
 ```bash
 # ALB Controller running
 kubectl get pods -n kube-system | grep alb-controller
@@ -133,7 +189,34 @@ az identity federated-credential list \
   --query "[?name=='aksfic']" -o table
 ```
 
+**Option 2: Azure PowerShell**
+
+PowerShell equivalents of the CLI verification commands above, using the [Az.ManagedServiceIdentity module](https://learn.microsoft.com/powershell/module/az.managedserviceidentity):
+
+```powershell
+# ALB Controller running
+kubectl get pods -n kube-system | grep alb-controller
+
+# GatewayClass accepted
+kubectl get gatewayclass azure-alb-external
+
+# Add-on managed identity present in MC_ resource group
+$AKS_NAME = '<your cluster name>'
+$RESOURCE_GROUP = '<your resource group name>'
+
+$aks = Get-AzAksCluster -ResourceGroupName $RESOURCE_GROUP -Name $AKS_NAME
+$MC_RG = $aks.NodeResourceGroup
+
+Get-AzUserAssignedIdentity -ResourceGroupName $MC_RG | Where-Object { $_.Name -like "applicationloadbalancer-*" } | Select-Object Name, PrincipalId
+
+# Federated credential
+$identityName = "applicationloadbalancer-${AKS_NAME}"
+Get-AzUserAssignedIdentity -ResourceGroupName $MC_RG -Name $identityName | Get-AzUserAssignedIdentityFederatedIdentityCredential | Where-Object { $_.Name -eq "aksfic" }
+```
+
 ## Rollback
+
+**Option 1: Azure CLI**
 
 ```bash
 az aks update \
@@ -142,6 +225,10 @@ az aks update \
   --disable-gateway-api \
   --disable-application-load-balancer
 ```
+
+**Option 2: Azure PowerShell**
+
+This step is not published as a native PowerShell cmdlet on MS Learn. The [add-on quickstart](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) ships Azure CLI and Azure REST tabs for the uninstall step. From PowerShell, either invoke the Azure CLI command above directly (`az aks update ...`) or use `Invoke-AzRestMethod` to call the AKS managedClusters PATCH endpoint. Consult the REST tab of the quickstart for the exact JSON schema.
 
 This removes the ALB Controller and the add-on managed identity. Any AGC resources created by the controller via `ApplicationLoadBalancer` custom resources are also removed. BYO AGC resources are left in place and must be deleted separately.
 
