@@ -83,8 +83,6 @@ All cmdlets default to dry-run or preview. `Convert-IngressToGateway` requires `
 
 Each script does one thing. Translation, inventory, and cutover are separate cmdlets so a failure in one does not contaminate the others.
 
-See `.squad/decisions/inbox/forge-migration-scripts-philosophy.md` for the full rationale.
-
 ## Links
 
 - [Gateway API Documentation](https://gateway-api.sigs.k8s.io/)
