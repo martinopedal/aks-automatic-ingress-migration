@@ -7,6 +7,7 @@ Migration toolkit for AKS Automatic clusters moving from `ingress-nginx` and the
 - The community `ingress-nginx` project enters maintenance mode in **March 2026**, per [Ingress NGINX retirement](https://www.kubernetes.dev/blog/2025/11/12/ingress-nginx-retirement/).
 - The Microsoft App Routing add-on (managed NGINX) stops receiving Azure support in **November 2026**, per the caution callout in [App routing Gateway API (preview)](https://learn.microsoft.com/azure/aks/app-routing-gateway-api): "the managed NGINX add-on... will stop receiving Azure support from Azure after November 2026."
 - AKS Automatic ships ingress-nginx by default, per [AKS Automatic overview](https://learn.microsoft.com/azure/aks/intro-aks-automatic). Customers who do nothing will be on an unsupported controller.
+- Other ingress paths: Customers using the Istio service mesh add-on as an ingress controller or AGIC (Application Gateway Ingress Controller) have separate documented paths. See [migration paths table](./preview-features.md#migration-paths-summary) and [Phase 00 prerequisites](./runbook/00-prereq-agc-availability.md#what-this-runbook-does-not-cover) for cross-links.
 
 ## How to use these docs
 

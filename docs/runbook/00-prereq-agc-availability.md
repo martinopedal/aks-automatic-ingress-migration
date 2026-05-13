@@ -37,8 +37,22 @@ Plan for **3-6 calendar months** end-to-end for an ALZ Corp environment with rea
 ## What this runbook does NOT cover
 
 - Migration off Application Gateway Ingress Controller (AGIC). AGIC users have a separate, simpler path documented at [learn.microsoft.com/azure/application-gateway/for-containers/migrate-from-agic-to-agc](https://learn.microsoft.com/azure/application-gateway/for-containers/migrate-from-agic-to-agc) (accessed 2026-04-22).
-- Service Mesh integration (Istio, Linkerd). AGC supports `BackendTLSPolicy` for upstream mTLS but mesh sidecar coexistence is out of scope.
+- Service mesh sidecar coexistence with AGC. AGC supports `BackendTLSPolicy` for upstream mTLS per the [AGC API specification](https://learn.microsoft.com/azure/application-gateway/for-containers/api-specification-kubernetes#packages) (accessed 2026-05-13), but mesh sidecar injection patterns (Istio, Linkerd) alongside AGC frontends are out of scope.
+- Istio service mesh add-on used as an ingress controller. Customers using the Istio add-on for ingress (not as a full sidecar mesh) have a documented path to adopt the Istio Gateway API mode (preview, asm-1-26+) per [Configure Istio ingress with the Kubernetes Gateway API for AKS (preview)](https://learn.microsoft.com/azure/aks/istio-gateway-api) (accessed 2026-05-13), without migrating to AGC. See the migration paths table in [`docs/preview-features.md`](../preview-features.md#migration-paths-summary).
 - Multi-cluster fleet routing.
+
+## AGC platform requirements
+
+Application Gateway for Containers requires AKS in Azure with Azure VNets. AGC is a PaaS resource (`Microsoft.ServiceNetworking/trafficControllers`) that relies on Azure-managed networking primitives and AKS-specific identity wiring.
+
+The following platforms are **not supported**:
+
+- **Azure Arc-enabled Kubernetes** (any non-Azure cluster connected via Arc). AGC requires Azure VNets with subnet delegation and cannot attach to clusters outside Azure.
+- **AKS on Azure Local** (formerly AKS hybrid / Azure Stack HCI). AGC subnet delegation and traffic controller provisioning require AKS-in-Azure.
+- **AKS Edge Essentials**. AGC is not supported on edge deployment models.
+- **Self-managed Kubernetes on Azure VMs** (without AKS). AGC requires AKS-managed identity federation and control plane integration. Kubernetes clusters deployed manually on Azure VMs do not have these primitives.
+
+**Citations:** [Application Gateway for Containers overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview) (accessed 2026-05-13) states "Azure Kubernetes Service (AKS)" as the target platform. The [ALB Controller add-on quickstart prerequisites](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) (accessed 2026-05-13) lists only AKS-in-Azure prerequisites with no mention of Arc or Azure Local support.
 
 ## Phases at a glance
 

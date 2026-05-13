@@ -24,6 +24,36 @@ Verify count:
 kubectl get ingress -A --no-headers | wc -l
 ```
 
+### 1.5 Detect non-Ingress traffic management resources
+
+An `Ingress`-only inventory misses users of Istio classic APIs (Istio's own Gateway + VirtualService), Istio Gateway API mode, App Routing Gateway API mode, and existing AGC deployments.
+
+Run the following detection commands:
+
+```bash
+# Istio classic ingress users (Istio's own Gateway + VirtualService kinds)
+kubectl get gateway.networking.istio.io -A 2>/dev/null
+kubectl get virtualservice -A 2>/dev/null
+
+# Gateway API users (any controller, including Istio GW API mode and existing AGC)
+kubectl get gateway.gateway.networking.k8s.io -A 2>/dev/null
+kubectl get httproute -A 2>/dev/null
+
+# Identify which controller a Gateway is bound to
+kubectl get gateway.gateway.networking.k8s.io -A -o custom-columns=NAMESPACE:.metadata.namespace,NAME:.metadata.name,CLASS:.spec.gatewayClassName
+```
+
+**Mapping detected state to migration path:**
+
+| Detected state | Recommended path | See |
+|---|---|---|
+| `gatewayClassName: istio` | Already on Istio GW API mode (no migration needed unless consolidating to AGC) | [Preview features, Istio GW API mode](../preview-features.md#istio-service-mesh-add-on-gateway-api-mode-preview) |
+| `gatewayClassName: approuting-istio` | Already on App Routing GW API mode | [Preview features, App Routing GW API](../preview-features.md#app-routing-gateway-api-implementation-preview) |
+| `gatewayClassName: azure-alb-external` or `azure-alb-internal` | Already on AGC (Gateway API) | [Preview features, AGC ALB Controller add-on](../preview-features.md#agc-alb-controller-aks-add-on-preview) |
+| `VirtualService` detected without GW API resources | Istio classic ingress user (path: stay on Istio + enable GW API mode, or migrate to AGC) | [Preview features, migration paths table](../preview-features.md#migration-paths-summary) |
+
+Proceed to the next step only if `Ingress` resources or non-AGC Gateway resources are detected.
+
 ### 2. Run the assessment cmdlet
 
 The repo ships a PowerShell helper that classifies every annotation against the `ingress2gateway` translation matrix and ALZ Corp policy.
