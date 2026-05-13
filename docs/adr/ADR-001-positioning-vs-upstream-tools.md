@@ -4,7 +4,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-04-22  
-**Deciders:** Sage, Lead
+**Deciders:** Toolkit maintainers
 
 ## Context
 

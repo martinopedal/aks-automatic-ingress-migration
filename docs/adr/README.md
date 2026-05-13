@@ -59,4 +59,4 @@ This index includes both Accepted ADRs (active decisions) and Proposed ADRs (awa
 
 ## Decision log
 
-For a history of how decisions are made and approved, see [`.squad/decisions.md`](../../.squad/decisions.md).
+Architectural decisions follow the format defined in [ADR-template.md](ADR-template.md). Each ADR records context, decision, consequences, and is reviewed before merge.

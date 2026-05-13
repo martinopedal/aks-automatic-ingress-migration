@@ -1,7 +1,5 @@
 # Identity wiring for AGC controller (Workload Identity)
 
-Owner: Iris
-
 This runbook wires the AGC ALB controller to a user-assigned managed identity using AKS Workload Identity and federated credentials, avoiding service principal secrets in cluster.
 
 ## Inputs

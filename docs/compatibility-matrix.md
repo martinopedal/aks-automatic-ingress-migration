@@ -1,6 +1,5 @@
 # Compatibility matrix
 
-**Owner:** Atlas (`squad:atlas`)  
 **Review cadence:** Quarterly  
 **Last reviewed:** 2026-05-12  
 **Access date:** 2026-05-12

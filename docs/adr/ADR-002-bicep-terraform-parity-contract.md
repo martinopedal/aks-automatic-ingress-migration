@@ -4,7 +4,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-04-22  
-**Deciders:** Forge, Lead
+**Deciders:** Toolkit maintainers
 
 ## Context
 
@@ -97,7 +97,7 @@ This workflow runs before any manual review. PRs cannot merge without a passing 
 ### Neutral
 
 - **Not every file requires parity.** Terraform-specific tooling (e.g., `terraform fmt`, `tflint` configs) and Bicep-specific tooling (e.g., `bicepconfig.json`) live in their respective directories without equivalents. Only modules with outputs are subject to parity.
-- **Escape hatch exists.** If a feature is only available in one stack, we document the gap in `.squad/decisions.md` with a "deferred parity" decision and a target date for resolution. This unblocks time-sensitive features while preserving the long-term contract.
+- **Escape hatch exists.** If a feature is only available in one stack, we document the gap as a known parity deferral with a target date for resolution. This unblocks time-sensitive features while preserving the long-term contract.
 
 ## Alternatives considered
 
@@ -111,7 +111,7 @@ We could pick one stack (Terraform or Bicep) as the primary and generate the oth
 
 ### Feature-flag drift with deferred decisions
 
-We keep this as an escape hatch. If a feature is only available in azapi or Bicep extensibility providers, we document the gap in `.squad/decisions.md` with a target resolution date. Example: "AGC custom health probes are azapi-only as of 2026-04-22, Bicep parity deferred to 2026-05-15 pending azurerm provider release." This prevents blocking legitimate features while preserving the parity contract as the default.
+We keep this as an escape hatch. If a feature is only available in azapi or Bicep extensibility providers, we document the gap as a known parity deferral with a target resolution date. Example: "AGC custom health probes are azapi-only as of 2026-04-22, Bicep parity deferred to 2026-05-15 pending azurerm provider release." This prevents blocking legitimate features while preserving the parity contract as the default.
 
 ### No parity enforcement
 
