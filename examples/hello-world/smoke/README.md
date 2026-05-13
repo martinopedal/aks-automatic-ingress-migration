@@ -61,6 +61,27 @@ defaults to the weekly schedule (Mondays 03:00 UTC) plus on-demand
 `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` repository
 secrets are absent, so forks no-op.
 
+## Who this is for
+
+The workflow is a maintainer regression check. It exists so the repo notices
+when an AKS minor version bump, an ALB Controller chart update, or an AGC
+behavior change quietly breaks the documented happy path. It is not a
+deployment tool for downstream users.
+
+If you forked or cloned this repo, you have three options:
+
+1. **Do nothing.** Without `AZURE_*` secrets the preflight skips and no
+   resources are created. The workflow is harmless.
+2. **Disable the schedule** if the weekly run is noise in your Actions tab.
+   `Settings → Actions → Workflows → smoke-test → Disable workflow`.
+3. **Run it against your own subscription** by adding the three secrets and
+   firing `workflow_dispatch`. You will pay the ~$0.50 to $1 per run.
+
+For your own AGC deployment, copy `deploy.sh` and adapt to your subscription,
+network posture, and identity model. The script is the canonical executable
+reference for the role IDs, the Helm chart version, the AGC managed-mode
+annotations, and the wait conditions, all in working order.
+
 ## Local invocation
 
 You can run `deploy.sh` against your own subscription for one-off testing.

@@ -134,12 +134,15 @@ Invoke-Pester scripts/migration/tests
 
 ## Live smoke workflow
 
-[`.github/workflows/smoke-test.yml`](.github/workflows/smoke-test.yml) deploys an ephemeral AKS + AGC environment, probes the public Gateway frontend, and tears it down. It runs weekly on schedule (Mondays 03:00 UTC) and supports manual `workflow_dispatch`.
+[`.github/workflows/smoke-test.yml`](.github/workflows/smoke-test.yml) is a maintainer regression check, not a deployment tool for downstream users. It exists so this repo notices when an AKS minor version bump, an ALB Controller chart update, or an AGC behavior change quietly breaks the documented happy path. It runs weekly on schedule (Mondays 03:00 UTC) and on `workflow_dispatch`.
 
-- **What it deploys:** standard AKS cluster, user-assigned managed identity federated to the ALB Controller service account, ALB Controller installed via Helm in managed-by-controller mode, an `ApplicationLoadBalancer` custom resource (which provisions AGC), and a `hashicorp/http-echo` workload behind a Gateway and HTTPRoute. See [`examples/hello-world/smoke/README.md`](examples/hello-world/smoke/README.md) for the full deploy script and pinned versions.
+For your own deployment, do not rely on the workflow. Read [`examples/hello-world/smoke/deploy.sh`](examples/hello-world/smoke/deploy.sh) as canonical executable reference: it has the real role IDs, Helm chart version, AGC managed-mode annotations, and wait conditions in working order. Adapt to your subscription, network posture, and identity model.
+
+- **What it deploys (when secrets are configured):** standard AKS cluster, user-assigned managed identity federated to the ALB Controller service account, ALB Controller installed via Helm in managed-by-controller mode, an `ApplicationLoadBalancer` custom resource (which provisions AGC), and a `hashicorp/http-echo` workload behind a Gateway and HTTPRoute. See [`examples/hello-world/smoke/README.md`](examples/hello-world/smoke/README.md) for the full deploy script and pinned versions.
 - **Authentication:** GitHub OIDC. Requires `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` repository secrets. The preflight job skips the run with a clear `reason` when secrets are missing, so forks no-op gracefully.
 - **Smoke divergences from the ALZ Corp default posture:** the smoke Gateway uses `gatewayClassName: azure-alb-external` (public frontend) so the GitHub-hosted runner can probe it, and uses standard AKS rather than AKS Automatic because the Helm install path for the ALB Controller is unsupported on Automatic per the [AGC FAQ](https://learn.microsoft.com/azure/application-gateway/for-containers/faq). Production usage follows the ALZ posture documented in [`examples/hello-world/`](examples/hello-world/).
-- **Cost and timing:** ~15 to 20 minutes end to end, ~$0.50 to $1 per run in transient resources. The workflow's final step deletes the smoke resource group; `examples/hello-world/smoke/teardown.sh` does best-effort cleanup of the AKS node resource group.
+- **For forkers:** the workflow is harmless if you do nothing. Without `AZURE_*` secrets the preflight skips and no resources are created. If the weekly run is noise in your tabs, disable it under `Settings → Actions → Workflows → smoke-test`.
+- **Cost and timing (only relevant if you wire secrets):** ~15 to 20 minutes end to end, ~$0.50 to $1 per run in transient resources. The workflow's final step deletes the smoke resource group; `examples/hello-world/smoke/teardown.sh` does best-effort cleanup of the AKS node resource group.
 
 ## Security baseline
 
