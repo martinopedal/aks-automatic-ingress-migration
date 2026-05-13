@@ -49,35 +49,6 @@ The Application Gateway for Containers ALB Controller is available as an AKS add
 
 Source: [Quickstart: Deploy Application Gateway for Containers ALB controller add-on](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon) (accessed 2026-05-12).
 
-## Istio service mesh add-on Gateway API mode (preview)
-
-The Istio service mesh add-on supports the Kubernetes Gateway API (`gateway.networking.k8s.io/v1`) in preview. This provides a Gateway API path for customers already using the Istio add-on for ingress, without migrating to AGC.
-
-Source: [Configure Istio ingress with the Kubernetes Gateway API for AKS (preview)](https://learn.microsoft.com/azure/aks/istio-gateway-api) (accessed 2026-05-13).
-
-### What it is
-
-Istio service mesh add-on with Gateway API CRDs enabled. Uses `gatewayClassName: istio`. Requires Istio add-on revision `asm-1-26` or higher and the AKS Managed Gateway API CRDs add-on enabled on the cluster.
-
-### Prerequisites
-
-- Feature flag: `ManagedGatewayAPIPreview` (Microsoft.ContainerService)
-- Istio service mesh add-on revision `asm-1-26` or higher installed on the cluster per [Deploy Istio-based service mesh add-on for AKS](https://learn.microsoft.com/azure/aks/istio-deploy-addon) (accessed 2026-05-13)
-- Managed Gateway API CRDs enabled per [Enable Managed Gateway API on AKS](https://learn.microsoft.com/azure/aks/managed-gateway-api) (accessed 2026-05-13)
-
-### Limitations
-
-Per the [Limitations and considerations](https://learn.microsoft.com/azure/aks/istio-gateway-api#limitations-and-considerations) section (accessed 2026-05-13):
-
-- Cannot coexist with App Routing Gateway API implementation. You must disable one before enabling the other.
-- ConfigMap customizations for `Gateway` resources must fall within the resource customization allow list. See the [Istio add-on support policy](https://learn.microsoft.com/azure/aks/istio-support-policy#allowed-supported-and-blocked-customizations) (accessed 2026-05-13) for allowed, blocked, and supported features.
-- TLSRoute SNI passthrough (HTTPS ingress to HTTPS services) is unsupported.
-- Egress traffic management with Gateway API via Istio add-on is only supported for the [manual deployment model](https://istio.io/latest/docs/tasks/traffic-management/ingress/gateway-api/#manual-deployment).
-
-### Microsoft's positioning
-
-This is the recommended Gateway API path for customers already on the Istio service mesh add-on who want Gateway API without migrating off Istio.
-
 ### What it is
 
 Managed installation of the AGC ALB Controller as an AKS add-on. Auto-creates managed identity, federated identity credential, subnet delegation, and role assignments.
@@ -116,6 +87,35 @@ kubectl get pods -n kube-system | grep alb-controller
 
 kubectl get gatewayclass azure-alb-external
 ```
+
+## Istio service mesh add-on Gateway API mode (preview)
+
+The Istio service mesh add-on supports the Kubernetes Gateway API (`gateway.networking.k8s.io/v1`) in preview. This provides a Gateway API path for customers already using the Istio add-on for ingress, without migrating to AGC.
+
+Source: [Configure Istio ingress with the Kubernetes Gateway API for AKS (preview)](https://learn.microsoft.com/azure/aks/istio-gateway-api) (accessed 2026-05-13).
+
+### What it is
+
+Istio service mesh add-on with Gateway API CRDs enabled. Uses `gatewayClassName: istio`. Requires Istio add-on revision `asm-1-26` or higher and the AKS Managed Gateway API CRDs add-on enabled on the cluster.
+
+### Prerequisites
+
+- Feature flag: `ManagedGatewayAPIPreview` (Microsoft.ContainerService)
+- Istio service mesh add-on revision `asm-1-26` or higher installed on the cluster per [Deploy Istio-based service mesh add-on for AKS](https://learn.microsoft.com/azure/aks/istio-deploy-addon) (accessed 2026-05-13)
+- Managed Gateway API CRDs enabled per [Enable Managed Gateway API on AKS](https://learn.microsoft.com/azure/aks/managed-gateway-api) (accessed 2026-05-13)
+
+### Limitations
+
+Per the [Limitations and considerations](https://learn.microsoft.com/azure/aks/istio-gateway-api#limitations-and-considerations) section (accessed 2026-05-13):
+
+- Cannot coexist with App Routing Gateway API implementation. You must disable one before enabling the other.
+- ConfigMap customizations for `Gateway` resources must fall within the resource customization allow list. See the [Istio add-on support policy](https://learn.microsoft.com/azure/aks/istio-support-policy#allowed-supported-and-blocked-customizations) (accessed 2026-05-13) for allowed, blocked, and supported features.
+- TLSRoute SNI passthrough (HTTPS ingress to HTTPS services) is unsupported.
+- Egress traffic management with Gateway API via Istio add-on is only supported for the [manual deployment model](https://istio.io/latest/docs/tasks/traffic-management/ingress/gateway-api/#manual-deployment).
+
+### Microsoft's positioning
+
+This is the recommended Gateway API path for customers already on the Istio service mesh add-on who want Gateway API without migrating off Istio.
 
 ## Migration paths summary
 

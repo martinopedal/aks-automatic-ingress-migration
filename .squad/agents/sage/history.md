@@ -180,3 +180,39 @@ PR #65 (executed by @copilot direct) fixed two defects in my wave 2 `docs/previe
 Strengthened toolkit posture wording to make explicit that the Helm-based IaC in this repo targets standard AKS only, not AKS Automatic.
 
 **Lesson:** When documenting migration paths, distinguish source vs target workloads explicitly. The previous table conflated them. Also: when an add-on path is the only supported route on a platform variant, the platform variant deserves its own row, not a footnote.
+
+### 2026-05-13: Wave 7 scenario coverage (Istio add-on ingress, AGC platform requirements)
+
+**Task:** Cover two scenario gaps surfaced by the end-to-end Microsoft Learn audit: Istio service mesh add-on used as an ingress controller (not just sidecar mesh), and explicit AGC platform requirements (no Arc, no Azure Local, no Edge Essentials).
+
+**Context:**
+- Coordinator ran a scenario audit asking "are we covering all scenarios such as Istio without the full functionality?" and "should we extend with a bare metal section too?"
+- Verified via Microsoft Learn MCP fetch (2026-05-13):
+  1. AKS Automatic feature comparison shows Istio add-on ingress gateway is one of three blessed ingress options on Automatic (alongside managed NGINX via App Routing and bring-your-own).
+  2. Istio Gateway API mode (preview, asm-1-26+) is a documented no-AGC, no-migration path per [Configure Istio ingress with Kubernetes Gateway API for AKS (preview)](https://learn.microsoft.com/azure/aks/istio-gateway-api).
+  3. AGC overview and ALB Controller add-on quickstart list only AKS-in-Azure as prerequisites. No mention of Arc, Azure Local, or Edge Essentials support. AGC requires Azure VNets with subnet delegation and AKS-managed primitives.
+
+**Files modified (PR #74):**
+1. `docs/runbook/00-prereq-agc-availability.md`: Split the original "Service Mesh integration (Istio, Linkerd)" bullet into two: one for mesh sidecar coexistence (still out of scope, BackendTLSPolicy cited), one for Istio add-on as ingress controller (documented path, cross-links to preview-features migration paths table). Added new `## AGC platform requirements` section listing non-fits (Arc, Azure Local, Edge Essentials, self-managed K8s on VMs).
+2. `docs/preview-features.md`: Added `## Istio service mesh add-on Gateway API mode (preview)` section after AGC ALB Controller add-on section. Covers what it is, prerequisites (asm-1-26+, Managed Gateway API CRDs), limitations (cannot coexist with App Routing GW API impl, ConfigMap restrictions, TLSRoute SNI passthrough unsupported), MS positioning. Added three new rows to migration paths table (Istio classic → stay on Istio + enable GW API mode; Istio GW API already → no migration needed; AGIC → AGIC-to-AGC migration). Added `## AGC platform support` paragraph after migration paths table.
+3. `docs/runbook/01-assess-current-ingress.md`: Added `### 1.5 Detect non-Ingress traffic management resources` before step 2. Provides detection commands for Istio classic (gateway.networking.istio.io, VirtualService), Gateway API users (gateway.gateway.networking.k8s.io, HTTPRoute), and `gatewayClassName` inspection. Added state-to-path mapping table (gatewayClassName: istio → already on Istio GW API mode, gatewayClassName: approuting-istio → already on App Routing GW API, gatewayClassName: azure-alb-* → already on AGC, VirtualService → Istio classic).
+4. `docs/index.md`: Added one bullet under "Why" listing Istio add-on and AGIC as documented source paths with cross-links to preview-features and runbook 00.
+
+**Learnings:**
+1. **AKS Automatic ingress option triplet.** Per the AKS Automatic feature comparison fetched from MS Learn, ingress on Automatic is "Preconfigured: Managed NGINX using the application routing add-on... Optional: Istio-based service mesh add-on for AKS ingress gateway. Bring your own ingress or gateway." The runbook had only treated ingress-nginx and App Routing (managed NGINX). Istio add-on ingress gateway is a first-class option, not a mesh-only feature.
+2. **Istio Gateway API mode positioning.** The Istio add-on supports both classic Istio APIs (Gateway/VirtualService from gateway.networking.istio.io) and the upstream Kubernetes Gateway API (gateway.networking.k8s.io) on revisions asm-1-26+. Per MS Learn, this is the recommended Gateway API path for Istio add-on users, without migrating to AGC. Cannot coexist with App Routing's Gateway API impl (one GW API controller per cluster).
+3. **AGC platform requirements explicit.** AGC requires AKS in Azure. Azure Arc-enabled Kubernetes, AKS on Azure Local, AKS Edge Essentials, and self-managed Kubernetes on Azure VMs are not supported because AGC subnet delegation and traffic controller provisioning require AKS-in-Azure primitives. Previous docs did not state this explicitly, leading to potential customer confusion.
+4. **Detection commands for non-Ingress users.** An Ingress-only inventory misses Istio classic users (who use gateway.networking.istio.io/v1 Gateway + VirtualService), Istio GW API users (who use gateway.networking.k8s.io/v1 Gateway with gatewayClassName: istio), and existing AGC or App Routing GW API users. Added detection step in Phase 01 with kubectl get commands for all four resource types.
+5. **AGIC row added to migration paths table.** AGIC users have a separate, simpler path per [Migrate from AGIC to AGC](https://learn.microsoft.com/azure/application-gateway/for-containers/migrate-from-agic-to-agc). Previously mentioned only in the "What this runbook does NOT cover" section but not in the consolidated migration paths table. Now both places cross-reference.
+
+**Quality gate applied:**
+- All MS Learn URLs cite section anchors where available (#supported-regions, #limitations-and-considerations).
+- All URLs are locale-less (learn.microsoft.com/azure/..., not learn.microsoft.com/en-us/azure/...).
+- No em dashes, no en dashes, no banned phrases.
+- All citations inline near claims, not parked in References sections.
+- Access date (2026-05-13) included where verification was performed.
+
+**Next steps:**
+- Decision summary to `.squad/decisions/inbox/sage-wave7-scenario-coverage.md`.
+- Watch for future AKS service mesh add-on docs updates (Istio GW API mode may GA in future).
+- Monitor AGC FAQ and overview for Arc/Azure Local/Edge Essentials support announcements (none as of 2026-05-13).
