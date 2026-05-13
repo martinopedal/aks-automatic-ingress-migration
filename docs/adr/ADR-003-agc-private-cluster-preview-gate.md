@@ -4,7 +4,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-04-22  
-**Deciders:** Sage, Sentinel
+**Deciders:** Toolkit maintainers
 
 ## Context
 
@@ -33,7 +33,7 @@ Concrete deliverables:
 
 2. **Per-region availability matrix:** `docs/agc-region-matrix.md` is the canonical region list for the toolkit, sourced from the AGC overview's [Supported regions](https://learn.microsoft.com/azure/application-gateway/for-containers/overview#supported-regions) section. This ADR does not embed a duplicate region list; readers should consult that file for the verified list.
 
-3. **Quarterly review cadence:** Sage owns a recurring task to check the [Azure Updates page](https://azure.microsoft.com/updates/) and AGC documentation quarterly. If GA is announced, `docs/runbook/00-prereq-agc-availability.md` and `docs/agc-region-matrix.md` are updated, and the runbook prerequisite check is relaxed or removed.
+3. **Quarterly review cadence:** Toolkit maintainers run a recurring quarterly task to check the [Azure Updates page](https://azure.microsoft.com/updates/) and AGC documentation. If GA is announced, `docs/runbook/00-prereq-agc-availability.md` and `docs/agc-region-matrix.md` are updated, and the runbook prerequisite check is relaxed or removed.
 
 4. **Escalation path:** The prerequisite document includes links to:
    - [Azure support request process](https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request)
@@ -54,7 +54,7 @@ This ADR does not mandate creating the full content of `docs/runbook/00-prereq-a
 ### Negative
 
 - **Slows time-to-first-success.** Some customers will hit the prerequisite check and stop, delaying their migration.
-- **Maintenance burden.** Sage must review the matrix quarterly and monitor Azure Updates. This is recurring effort.
+- **Maintenance burden.** Toolkit maintainers review the matrix quarterly and monitor Azure Updates. This is recurring effort.
 - **Complexity for edge cases.** Customers in regions where AGC is not supported at all (outside the 23 listed) need separate guidance. The matrix must account for "not supported" versus "preview" versus "GA."
 
 ### Neutral

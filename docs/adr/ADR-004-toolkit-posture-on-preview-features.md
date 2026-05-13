@@ -36,7 +36,7 @@ This preview eliminates the manual Helm installation of the ALB Controller. The 
 
 Enablement: `az aks update --enable-gateway-api --enable-application-load-balancer`.
 
-This collides with our existing IaC scope. Per ADR-002, IaC modules provision AGC infrastructure (Application Gateway for Containers resource, subnet delegation, managed identity, RBAC). Identity management is Iris's domain per runbook phase 03. The add-on auto-creates identity in the node resource group (MC_), which is outside the standard scope for customer-managed identities in ALZ Corp environments.
+This collides with our existing IaC scope. Per ADR-002, IaC modules provision AGC infrastructure (Application Gateway for Containers resource, subnet delegation, managed identity, RBAC). Identity management is covered in runbook phase 03. The add-on auto-creates identity in the node resource group (MC_), which is outside the standard scope for customer-managed identities in ALZ Corp environments.
 
 ### Preview SLA exclusion
 
@@ -44,7 +44,7 @@ Per [Azure preview supplemental terms](https://azure.microsoft.com/support/legal
 
 ### Toolkit's current posture
 
-This toolkit provisions AGC infrastructure via Terraform and Bicep (ADR-002 parity contract), installs ALB Controller via Helm, and separates identity management (runbook phase 03, Iris's domain). This worked when AGC was Helm-only. The two preview features offer alternative paths that reduce customer implementation work but carry preview risk and change identity boundaries.
+This toolkit provisions AGC infrastructure via Terraform and Bicep (ADR-002 parity contract), installs ALB Controller via Helm, and separates identity management (runbook phase 03). This worked when AGC was Helm-only. The two preview features offer alternative paths that reduce customer implementation work but carry preview risk and change identity boundaries.
 
 Toolkit audience: AKS Automatic users planning migration before the November 2026 ingress-nginx retirement deadline. Many run production workloads under enterprise compliance and SLA requirements.
 
@@ -64,7 +64,7 @@ However, we WILL document preview features as alternatives with clear risk state
 
 Rationale for not shipping IaC:
 
-1. The add-on auto-creates identity in the MC_ resource group. This violates the separation of concerns established in ADR-002 (IaC provisions infrastructure, identity is separate) and in runbook phase 03 (Iris owns identity wiring). Auto-created identities in node resource groups are outside customer control and harder to audit in ALZ Corp environments where RBAC and identity lifecycle are governed processes.
+1. The add-on auto-creates identity in the MC_ resource group. This violates the separation of concerns established in ADR-002 (IaC provisions infrastructure, identity is separate) and in runbook phase 03 (identity wiring is a separate step). Auto-created identities in node resource groups are outside customer control and harder to audit in ALZ Corp environments where RBAC and identity lifecycle are governed processes.
 2. The add-on does not produce the same outputs as the Helm path (`agc_identity_client_id`, `agc_subnet_id`, customer-chosen identity name and subnet name). Wrapping it in a Terraform or Bicep module would either break the parity contract (ADR-002) or require a parallel module set with different outputs that downstream consumers must branch on. Both options dilute the toolkit's value.
 3. Preview-as-code is fragile. The add-on is currently behind two preview feature flags (`ManagedGatewayAPIPreview`, `ApplicationLoadBalancerPreview`). If schema or behavior changes at GA, IaC modules become churn that re-implementers must track. Documentation of the canonical `az aks update` command is more durable.
 
@@ -99,7 +99,7 @@ This positions the toolkit clearly: we are the AGC path. App Routing Gateway API
 ### Positive
 
 - **Clarity for production users.** Customers understand that this toolkit prioritizes production-supported paths. Preview features are documented but not recommended.
-- **Maintains IaC scope integrity.** We do not ship IaC that auto-creates identity outside customer-controlled resource groups. ADR-002 parity contract and Iris's identity boundary remain intact.
+- **Maintains IaC scope integrity.** We do not ship IaC that auto-creates identity outside customer-controlled resource groups. ADR-002 parity contract and the identity boundary in runbook phase 03 remain intact.
 - **Reduces future maintenance risk.** If preview features change or are withdrawn, we have no IaC to maintain or deprecate. Documentation updates are simpler than code deprecation.
 - **Positions AGC correctly.** Customers who need AGC-specific features (WAF, private cluster posture, multi-region, Azure integration) have a clear path. Customers who only need Gateway API and are satisfied with App Routing constraints can skip AGC entirely.
 
@@ -122,7 +122,7 @@ We could treat the add-on as the future and ship IaC for it immediately. Create 
 Rejected because:
 1. Preview features are excluded from SLA. We cannot recommend this for production migrations.
 2. Output schema parity (ADR-002) breaks. The add-on auto-creates identity and subnet in MC_ resource group. Outputs will differ from the Helm path (identity name is `applicationloadbalancer-<cluster-name>` instead of customer-chosen, subnet is `aks-appgateway` instead of customer-chosen). This violates the parity contract.
-3. Identity boundary violation. Iris's runbook phase 03 manages identity separately. The add-on collapses infrastructure and identity into one step, breaking the modular runbook structure.
+3. Identity boundary violation. Runbook phase 03 manages identity separately. The add-on collapses infrastructure and identity into one step, breaking the modular runbook structure.
 
 ### Document but stay silent on recommendation
 

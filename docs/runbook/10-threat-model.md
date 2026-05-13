@@ -1,6 +1,5 @@
 # Threat Model, AGC Migration Path
 
-**Owner:** Sentinel  
 **Last reviewed:** 2026-05-13
 
 ## Scope
