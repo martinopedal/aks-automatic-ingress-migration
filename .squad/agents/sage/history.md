@@ -216,3 +216,42 @@ Strengthened toolkit posture wording to make explicit that the Helm-based IaC in
 - Decision summary to `.squad/decisions/inbox/sage-wave7-scenario-coverage.md`.
 - Watch for future AKS service mesh add-on docs updates (Istio GW API mode may GA in future).
 - Monitor AGC FAQ and overview for Arc/Azure Local/Edge Essentials support announcements (none as of 2026-05-13).
+
+### 2026-05-13: Wave 8 squad attribution sanitization (PR #76)
+
+**Task:** Remove internal squad attribution (cast names, .squad/* references) from 8 customer-facing docs/ files. External readers do not need to know about internal agent roles.
+
+**Context:**
+- User feedback: docs/ is positioned as a community toolkit. Cast names (Sage, Sentinel, Iris, Forge, Atlas, Lead) and .squad/* path references confuse external contributors and customers.
+- Squad attribution belongs in .squad/, not in docs/.
+
+**Files modified:**
+1. `docs/adr/ADR-001-positioning-vs-upstream-tools.md`: Deciders "Sage, Lead" → "Toolkit maintainers"
+2. `docs/adr/ADR-002-bicep-terraform-parity-contract.md`: Deciders "Forge, Lead" → "Toolkit maintainers"; removed two .squad/decisions.md references, replaced with neutral phrasing about known parity deferrals
+3. `docs/adr/ADR-003-agc-private-cluster-preview-gate.md`: Deciders "Sage, Sentinel" → "Toolkit maintainers"; "Sage owns" → "Toolkit maintainers run"; "Sage must review" → "Toolkit maintainers review"
+4. `docs/adr/ADR-004-toolkit-posture-on-preview-features.md`: "Iris's domain per runbook phase 03" → "covered in runbook phase 03" (5 instances); "Iris owns identity wiring" → "identity wiring is a separate step"
+5. `docs/adr/README.md`: Removed .squad/decisions.md link, replaced with neutral ADR decision process statement
+6. `docs/compatibility-matrix.md`: Dropped "Owner: Atlas (squad:atlas)" line
+7. `docs/runbook/10-threat-model.md`: Dropped "Owner: Sentinel" line
+8. `docs/runbook/20-identity-wiring-agc-controller.md`: Dropped "Owner: Iris" line
+
+**Verification:**
+- Ran `Get-ChildItem -Path docs -Recurse -File | Select-String -Pattern "\bSage\b|\bSentinel\b|\bIris\b|\bForge\b|\bAtlas\b|\.squad/"` and confirmed zero matches (only false positives in legitimate prose like "ingress", "ServiceAccount", "Gateway API")
+- Verified H2 structure intact across all 8 files (no section ordering broke)
+
+**Learnings:**
+1. **Customer-facing docs must stay role-neutral.** External readers do not care who authored which section. Role attribution is internal squad coordination data that belongs in .squad/, not docs/.
+2. **"Toolkit maintainers" is the correct neutral phrase.** Replaces specific cast names in ADR Deciders fields. Preserves accountability without leaking internal agent names.
+3. **Runbook phase references replace agent domain claims.** "Iris's domain per runbook phase 03" → "covered in runbook phase 03". Phase numbers are public API; agent names are internal.
+4. **.squad/* path references must be replaced with neutral phrasing.** "We document the gap in .squad/decisions.md" → "We document the gap as a known parity deferral with a target date for resolution." Content preserved, internal path dropped.
+5. **Word-boundary grep is critical.** Searching for "Iris" without word boundaries matches "IrisService" or similar. Always use `\bIris\b` or equivalent. False positives from "ingress", "ServiceAccount", "Gateway API" are acceptable (manually inspected and ruled out).
+
+**Quality gate applied:**
+- Zero squad attribution in docs/ (verified by grep)
+- H2 structure preserved (verified by Select-String on all 8 files)
+- Voice profile respected (no em dashes, no banned phrases, inline citations preserved)
+- Commit message follows convention (scope prefix `docs:`, imperative mood, Co-authored-by trailer)
+
+**Next steps:**
+- Decision summary to `.squad/decisions/inbox/sage-wave8-squad-bleed-removal.md`.
+- Watch for future docs/ additions that might leak squad attribution (contributors may copy-paste from .squad/ files).
