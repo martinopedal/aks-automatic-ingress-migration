@@ -315,6 +315,59 @@ Two final sweeps after wave 4.
 
 **Branch hygiene:** Pruned 14 stale remote tracking branches and 5 stale local branches after PR merges. Closed orphan `chore/wave2-lead-finalize` (was PR #62, closed redundant by Lead's reconciliation per entry 12). Repo now has `main` as the only remote head.
 
+### 16. Wave 6: PowerShell tab and threat model expansion (Coordinator)
+
+**Date:** 2026-05-13  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+User asked for "new work, PowerShell as option 2, and extend 10-threat-model.md." Wave 6 ships both as parallel PRs using isolated worktrees (one per agent) to avoid the wave 2 cwd contamination pattern.
+
+**Wave 6 PRs (parallel, two worktrees):**
+
+- **#72 (feat/aks-automatic-pwsh-tab, Sage on Haiku):** Add PowerShell as Option 2 alongside Azure CLI in `docs/aks-automatic-path.md`. Initial draft invented `Update-AzAksCluster -EnableGatewayAPI -EnableApplicationLoadBalancer` and `NetworkProfile.NetworkPolicy = "azure"` which do not exist in the Az.Aks module. Coordinator caught the fabrication by re-fetching the canonical [add-on quickstart](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon): the install and disable steps ship Azure CLI + Azure REST tabs only, NOT PowerShell. Sage amended to honest disclaimer prose pointing readers to the REST tab and `Invoke-AzRestMethod` wrapping. Real PowerShell tabs (sign-in, register providers, RG delete) transcribed verbatim with inline citations.
+
+- **#73 (feat/threat-model-expansion, Sentinel on Sonnet):** Extend `docs/runbook/10-threat-model.md` from 109 to 288 lines with seven new sections: STRIDE catalog per the four trust boundaries, ALB Controller identity and RBAC (Helm vs add-on), Gateway API route attachment controls (allowedRoutes semantics), supply chain (MCR image, Helm chart pinning), logging and detection (AGC access logs, kube-audit, Defender for Containers), migration cutover risks (dual-stack, DNS TTL, decommission timing), AKS Automatic considerations (MC_ resource group identity scope per AGC FAQ). All claims grounded in MS Learn or Gateway API upstream docs with inline citations. Existing baseline sections preserved.
+
+**Lessons:**
+1. **Worktree isolation works.** Two background agents, two worktrees (`-sage-pwsh`, `-sentinel-tm`), zero cross-contamination. Pattern is now the default for parallel write-mode agents.
+2. **Tab pairings on MS Learn are not uniform.** A page that ships Azure CLI tabs may pair with PowerShell on some steps and Azure REST on others. Treat each step's tab pair as a separate verification, not a global assumption.
+3. **Coordinator caught the invented commands by re-fetching the canonical source.** Lesson: when an agent transcribes from MS Learn, spot-check at least one detail before merge. The quick voice grep is necessary but not sufficient; the citation accuracy check needs at least one fetch.
+
+### 17. Wave 7: scenario coverage audit, Istio add-on ingress + AGC platform requirements (Coordinator)
+
+**Date:** 2026-05-13  
+**Author:** martinopedal (via Squad coordinator)  
+**Status:** Completed
+
+User asked: "are we covering all scenarios such as Istio without the full functionality, application routing add-on, now application gateway for containers etc? should we extend with a bare metal section too?"
+
+Coordinator ran a Microsoft Learn MCP audit across all source and target ingress scenarios for AKS and AKS Automatic. The Learn MCP tools (`microsoft_docs_search`, `microsoft_docs_fetch`, `microsoft_code_sample_search`) became available this session via the `azure-mcp-documentation` router and replace the prior `web_fetch` workflow which collapsed tab panels.
+
+**Audit findings:**
+
+| Scenario | Status before wave 7 |
+|---|---|
+| OSS ingress-nginx (Helm) source | Covered |
+| App Routing add-on (managed NGINX) source | Covered |
+| AGIC source | Out of scope but linked, not in migration paths table |
+| Istio service mesh add-on as ingress source | Treated only as "mesh out of scope", missing nuance |
+| AGC Helm + AGC AKS add-on + BYO + ALB-managed targets | Covered |
+| App Routing GW API mode (preview) target | Covered |
+| Istio service mesh add-on GW API mode (preview) target | Not covered |
+| Bare metal / Arc / Azure Local | Not addressed |
+
+**Wave 7 PR:**
+
+- **#74 (feat/scenario-coverage-istio-platform-fit, Sage on Sonnet):** Refines `docs/runbook/00-prereq-agc-availability.md` "What this runbook does NOT cover" to distinguish mesh sidecar coexistence (still out of scope) from Istio add-on as ingress (documented path with no-AGC alternative via Istio GW API mode preview). Adds new `## AGC platform requirements` section explicitly stating AGC is AKS-in-Azure only with non-fits named (Arc, Azure Local, Edge Essentials, self-managed K8s on VMs). Adds `## Istio service mesh add-on Gateway API mode (preview)` section to `docs/preview-features.md` with prerequisites (asm-1-26+, Managed Gateway API CRDs), limitations (cannot coexist with App Routing GW API impl, ConfigMap restrictions, TLSRoute SNI passthrough unsupported), and Microsoft's positioning. Adds three migration paths table rows (Istio classic, Istio GW API already, AGIC). Adds detection commands and state-to-path mapping table to `docs/runbook/01-assess-current-ingress.md` for Istio classic, Istio GW API, App Routing GW API, and existing AGC.
+
+**Bare metal verdict:** No separate bare metal section. AGC is a PaaS (`Microsoft.ServiceNetworking/trafficControllers`) that requires Azure VNets and AKS-in-Azure. Arc-K8s, AKS on Azure Local, and AKS Edge Essentials are non-fits per the [AGC overview](https://learn.microsoft.com/azure/application-gateway/for-containers/overview) and [add-on quickstart prerequisites](https://learn.microsoft.com/azure/application-gateway/for-containers/quickstart-deploy-application-gateway-for-containers-alb-controller-addon). The non-fit callout in phase 00 prevents customer confusion without inflating scope.
+
+**Lessons:**
+1. **Learn MCP unblocked the audit.** Tab-aware fetch via `microsoft_docs_fetch` returned the AKS Automatic feature comparison page with the "three blessed ingress options" matrix verbatim, which was previously inferable but not directly cited. Use the Learn MCP for any future doc claim about MS-managed defaults or feature support boundaries.
+2. **AKS Automatic ingress option triplet.** Per MS Learn, ingress on Automatic is "Preconfigured: managed NGINX via App Routing add-on. Optional: Istio service mesh add-on for AKS ingress gateway. Bring your own ingress or gateway." The toolkit now treats all three options.
+3. **Mid-section H2 insertion broke document structure.** Sage's first draft put the new Istio H2 between the AGC ALB Controller add-on H2 and its own H3 children, orphaning the AGC sub-sections under the Istio H2. Coordinator caught with `grep "^##"` structural check before merge. Lesson: heading-order grep is now part of the standard PR review checklist for doc PRs that add H2s.
+
 ## Governance
 
 - All meaningful changes require team consensus
