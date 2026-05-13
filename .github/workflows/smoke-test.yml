@@ -19,7 +19,7 @@ on:
       expected_body:
         description: Body fragment expected from hello-world
         required: false
-        default: hello-world
+        default: hello from AGC
         type: string
       probe_count:
         description: Number of probe requests per endpoint
@@ -58,9 +58,9 @@ jobs:
             exit 0
           fi
 
-          if [[ ! -d samples/hello-world ]]; then
+          if [[ ! -x examples/hello-world/smoke/deploy.sh && ! -f examples/hello-world/smoke/deploy.ps1 ]]; then
             echo "can_run=false" >> "$GITHUB_OUTPUT"
-            echo "reason=samples/hello-world is missing. Expected sample deploy scripts at samples/hello-world/smoke/deploy.sh or deploy.ps1." >> "$GITHUB_OUTPUT"
+            echo "reason=Smoke deploy script missing. Expected one of: examples/hello-world/smoke/deploy.sh (executable) or examples/hello-world/smoke/deploy.ps1." >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -87,7 +87,7 @@ jobs:
       LOCATION: ${{ inputs.location || 'westeurope' }}
       INPUT_BASELINE_URL: ${{ inputs.baseline_url }}
       INPUT_AGC_URL: ${{ inputs.agc_url }}
-      EXPECTED_BODY: ${{ inputs.expected_body || 'hello-world' }}
+      EXPECTED_BODY: ${{ inputs.expected_body || 'hello from AGC' }}
       PROBE_COUNT: ${{ inputs.probe_count || '10' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -113,14 +113,14 @@ jobs:
       - name: Deploy hello-world sample
         run: |
           set -euo pipefail
-          if [[ -x samples/hello-world/smoke/deploy.sh ]]; then
-            samples/hello-world/smoke/deploy.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}" --output-file "${SMOKE_ENV_FILE}"
-          elif [[ -f samples/hello-world/smoke/deploy.ps1 ]]; then
-            pwsh -File samples/hello-world/smoke/deploy.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}" -OutputFile "${SMOKE_ENV_FILE}"
+          if [[ -x examples/hello-world/smoke/deploy.sh ]]; then
+            examples/hello-world/smoke/deploy.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}" --output-file "${SMOKE_ENV_FILE}"
+          elif [[ -f examples/hello-world/smoke/deploy.ps1 ]]; then
+            pwsh -File examples/hello-world/smoke/deploy.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}" -OutputFile "${SMOKE_ENV_FILE}"
           else
             echo "Deploy script not found. Expected one of:"
-            echo "  samples/hello-world/smoke/deploy.sh"
-            echo "  samples/hello-world/smoke/deploy.ps1"
+            echo "  examples/hello-world/smoke/deploy.sh"
+            echo "  examples/hello-world/smoke/deploy.ps1"
             exit 1
           fi
 
@@ -237,12 +237,12 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          if [[ -x samples/hello-world/smoke/teardown.sh ]]; then
-            if ! samples/hello-world/smoke/teardown.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}"; then
+          if [[ -x examples/hello-world/smoke/teardown.sh ]]; then
+            if ! examples/hello-world/smoke/teardown.sh --resource-group "${RESOURCE_GROUP}" --location "${LOCATION}"; then
               echo "Warning: teardown.sh returned a non-zero exit code."
             fi
-          elif [[ -f samples/hello-world/smoke/teardown.ps1 ]]; then
-            if ! pwsh -File samples/hello-world/smoke/teardown.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}"; then
+          elif [[ -f examples/hello-world/smoke/teardown.ps1 ]]; then
+            if ! pwsh -File examples/hello-world/smoke/teardown.ps1 -ResourceGroup "${RESOURCE_GROUP}" -Location "${LOCATION}"; then
               echo "Warning: teardown.ps1 returned a non-zero exit code."
             fi
           fi
