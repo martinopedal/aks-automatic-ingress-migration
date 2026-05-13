@@ -22,7 +22,7 @@ This repository uses AI-assisted development tools including GitHub Copilot and 
 ## AI tools used in this project
 
 - [GitHub Copilot](https://github.com/features/copilot) for code generation and review.
-- [Squad](https://github.com/bradygaster/squad) by Brady Gaster for agentic AI team orchestration. Team charter and routing live in [`.squad/`](.squad/).
+- [Squad](https://github.com/bradygaster/squad) by Brady Gaster for agentic AI team orchestration.
 - [Model Context Protocol](https://modelcontextprotocol.io/) servers (azure-mcp, microsoft-learn, github, kubernetes) used during authoring for grounded lookups.
 
 ## Migration content authoring

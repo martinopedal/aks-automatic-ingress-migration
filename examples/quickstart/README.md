@@ -69,7 +69,7 @@ terraform destroy
 
 Decision #1 defines quickstart scope. Excluded:
 - HTTPS/TLS (covered in catalog samples)
-- NetworkPolicy (Sentinel's domain)
+- NetworkPolicy (covered in runbook phase 02)
 - ALZ Corp wiring (documented in `docs/runbook/`)
 - Workload Identity (not needed for smoke test)
 - Multiple routes, path rewrites, header manipulation (covered in `manifests/ingress-to-gateway/`)

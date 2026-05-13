@@ -53,7 +53,7 @@ This check is required before merging any changes to IaC modules. CI enforces th
 
 ## Identity Scope
 
-**This directory does NOT provision the AGC managed identity or configure Workload Identity federation.** Identity wiring is per `docs/runbook/03-identity-wiring.md` and is managed by Iris, not Forge.
+**This directory does NOT provision the AGC managed identity or configure Workload Identity federation.** Identity wiring is per `docs/runbook/03-identity-wiring.md`.
 
 The AGC modules assume the caller has already created a managed identity and assigned appropriate RBAC (`Network Contributor` on the subnet, `AppGw for Containers Configuration Manager` on the resource group). The controller installation and identity federation are separate operations outside the IaC module boundary.
 

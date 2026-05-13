@@ -4,7 +4,7 @@
 
 **Status:** Accepted  
 **Date:** 2026-05-13  
-**Deciders:** Lead, Coordinator (per user direction)
+**Deciders:** Toolkit maintainers
 
 ## Context
 

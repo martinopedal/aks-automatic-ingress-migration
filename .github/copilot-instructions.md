@@ -25,10 +25,6 @@ Migration toolkit for AKS Automatic clusters moving from `ingress-nginx` / App R
 - AGC managed identity, never SP secrets.
 - Outputs from Terraform and Bicep must be name-equivalent to enable wrapper modules.
 
-## Squad
-
-Read `.squad/team.md` and `.squad/routing.md`. Use the `squad` label on issues for triage; named members pick up `squad:{name}` labels.
-
 ## Commit and PR conventions
 
 - Commit message: imperative mood, scope prefix (`feat(tf):`, `fix(bicep):`, `docs:`).

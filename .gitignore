@@ -16,3 +16,7 @@ __pycache__/
 .squad/*.tmp
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+
+# Squad team state — local-only orchestration tooling
+.squad/
+.copilot/

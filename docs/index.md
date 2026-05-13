@@ -51,4 +51,4 @@ CI enforces the same gates on every PR. See [`.github/workflows/`](../.github/wo
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](../CONTRIBUTING.md). Issues labeled `squad` go to Lead for triage; named owners pick up `squad:{name}` labels.
+See [`CONTRIBUTING.md`](../CONTRIBUTING.md).

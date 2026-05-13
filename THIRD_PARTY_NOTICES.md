@@ -90,7 +90,7 @@ This repository invokes, references, or depends on the following open-source pro
 - **Source:** https://github.com/bradygaster/squad
 - **Copyright:** Copyright (c) Brady Gaster
 - **License:** MIT License
-- **Usage:** Provides the agentic team orchestration scaffolding under `.squad/`.
+- **Usage:** Provides the agentic team orchestration scaffolding.
 
 ---
 

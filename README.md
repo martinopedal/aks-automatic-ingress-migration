@@ -30,11 +30,11 @@ The documented migration target is Gateway API with Application Gateway for Cont
 
 ## Status
 
-Pre-alpha. Backlog tracked as GitHub issues with the `squad` label.
+Pre-alpha. Backlog tracked as GitHub issues.
 
 ## Compatibility matrix
 
-See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix is reviewed quarterly by Atlas.
+See [`docs/compatibility-matrix.md`](docs/compatibility-matrix.md). The matrix is reviewed quarterly.
 
 ## Resources
 
@@ -58,9 +58,9 @@ Microsoft has shipped two preview features that change the migration story. See 
 - PowerShell: operational scripts.
 - Pester / `terraform validate` / `helm lint`: tests.
 
-## Squad
+## Development tooling
 
-Multi-agent dev via [Squad by Brady Gaster](https://github.com/bradygaster/squad). Team in `.squad/team.md`. Routing in `.squad/routing.md`. Open `squad`-labeled issues are the live backlog.
+Multi-agent dev via [Squad by Brady Gaster](https://github.com/bradygaster/squad).
 
 ## Live smoke workflow
 
