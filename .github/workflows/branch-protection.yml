@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   update-required-checks:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, personal, linux, x64]
     steps:
       - name: Update required status checks for main
         uses: actions/github-script@v9
