@@ -20,7 +20,7 @@ jobs:
       github.event.pull_request.user.login == 'copilot-swe-agent[bot]' ||
       github.event.pull_request.user.login == 'copilot-swe-agent' ||
       github.event.pull_request.user.login == 'Copilot'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, personal, linux, x64]
     steps:
       - name: Skip if still draft
         if: github.event.pull_request.draft == true
