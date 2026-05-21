@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   terraform:
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
@@ -29,7 +29,7 @@ jobs:
           fi
 
   bicep:
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: install bicep
@@ -41,7 +41,7 @@ jobs:
           fi
 
   manifests:
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: install kubeconform
