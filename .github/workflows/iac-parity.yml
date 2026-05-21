@@ -24,7 +24,7 @@ permissions:
 jobs:
   validate-agc-module:
     name: Validate AGC Module Parity
-    runs-on: [self-hosted, personal, linux, x64]
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

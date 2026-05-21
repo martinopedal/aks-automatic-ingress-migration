@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   update-required-checks:
-    runs-on: [self-hosted, personal, linux, x64]
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
     steps:
       - name: Update required status checks for main
         uses: actions/github-script@v9
