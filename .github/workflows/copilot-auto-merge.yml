@@ -20,7 +20,7 @@ jobs:
       github.event.pull_request.user.login == 'copilot-swe-agent[bot]' ||
       github.event.pull_request.user.login == 'copilot-swe-agent' ||
       github.event.pull_request.user.login == 'Copilot'
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","personal-linux"]') }}
     steps:
       - name: Skip if still draft
         if: github.event.pull_request.draft == true

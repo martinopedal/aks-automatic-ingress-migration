@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   preflight:
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","personal-linux"]') }}
     outputs:
       can_run: ${{ steps.check.outputs.can_run }}
       reason: ${{ steps.check.outputs.reason }}
@@ -70,7 +70,7 @@ jobs:
   skip:
     needs: preflight
     if: needs.preflight.outputs.can_run != 'true'
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","personal-linux"]') }}
     steps:
       - run: |
           echo "Smoke test skipped."
@@ -79,7 +79,7 @@ jobs:
   smoke:
     needs: preflight
     if: needs.preflight.outputs.can_run == 'true'
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","personal-linux"]') }}
     permissions:
       contents: read
       id-token: write
