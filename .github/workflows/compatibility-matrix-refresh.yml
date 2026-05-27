@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   open-refresh-issue:
-    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","linux","x64","personal"]') }}
+    runs-on: ${{ fromJSON(vars.RUNS_ON_LINUX_PERSONAL || '["self-hosted","personal-linux"]') }}
     steps:
       - name: Open quarterly refresh issue
         uses: actions/github-script@v7
